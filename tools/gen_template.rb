@@ -77,12 +77,16 @@ def embed_template(str, nparam)
     asserts = (0...nparam).map {|i| "ASSERT(CHECK(#{i}));"}.join(' ')
   end
 
-  return str.gsub(/%PARAMS%/, params).
-             gsub(/%NPARAM%/, nparam.to_s).
-             gsub(/%ARGS%/, args).
-             gsub(/%CLASSES0%/, classes).
-             gsub(/%CLASSES1%/, classes.empty? ? '' : ', ' + classes).
-             gsub(/%ASSERTS%/, asserts)
+  table = {
+    '%PARAMS%' => params,
+    '%NPARAM%' => nparam.to_s,
+    '%ARGS%' => args,
+    '%CLASSES0%' => classes,
+    '%CLASSES1%' => classes.empty? ? '' : ', ' + classes,
+    '%ASSERTS%' => asserts
+  }
+
+  return str.gsub(/(#{table.keys.join('|')})/) {|k| table[k]}
 end
 
 print HEADER
