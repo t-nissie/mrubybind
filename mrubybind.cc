@@ -32,8 +32,8 @@ static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
 }
 
 int initialize_mrubybind(mrb_state* mrb) {
-  mrb_define_method(mrb, mrb->kernel_module, "call_cfunc", call_cfunc, ARGS_REQ(2) | ARGS_REST());
-  mrb_define_method(mrb, mrb->kernel_module, "call_cmethod", call_cmethod, ARGS_REQ(3) | ARGS_REST());
+  mrb_define_method(mrb, mrb->kernel_module, "mrubybind_call_cfunc", call_cfunc, ARGS_REQ(2) | ARGS_REST());
+  mrb_define_method(mrb, mrb->kernel_module, "mrubybind_call_cmethod", call_cmethod, ARGS_REQ(3) | ARGS_REST());
   int n = mrb_read_irep(mrb, binder);
   if (n < 0)
     return 0;
