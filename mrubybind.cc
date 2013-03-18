@@ -8,6 +8,8 @@ namespace mrubybind {
 static
 #include "mrubybind.dat"
 
+RClass *mymodule;
+
 static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
   mrb_value binder;
   mrb_value p;
@@ -32,8 +34,9 @@ static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
 }
 
 int initialize_mrubybind(mrb_state* mrb) {
-  mrb_define_method(mrb, mrb->kernel_module, "mrubybind_call_cfunc", call_cfunc, ARGS_REQ(2) | ARGS_REST());
-  mrb_define_method(mrb, mrb->kernel_module, "mrubybind_call_cmethod", call_cmethod, ARGS_REQ(3) | ARGS_REST());
+  mymodule = mrb_define_module(mrb, "MrubyBind");
+  mrb_define_module_function(mrb, mymodule, "call_cfunc", call_cfunc, ARGS_REQ(2) | ARGS_REST());
+  mrb_define_module_function(mrb, mymodule, "call_cmethod", call_cmethod, ARGS_REQ(3) | ARGS_REST());
   int n = mrb_read_irep(mrb, binder);
   if (n < 0)
     return 0;
