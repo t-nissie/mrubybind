@@ -51,14 +51,13 @@ int main() {
   mrb_state* mrb = mrb_open();
 
   {
-    using namespace mrubybind;
-    initialize(mrb);
-    bind(mrb, "hoge", hoge);
-    bind(mrb, "fuga", fuga);
-    bind(mrb, "piyo", piyo);
-    bind(mrb, "square", square);
-    bind(mrb, "add", add);
-    bind(mrb, "test", test);
+    mrubybind::MrubyBind b(mrb);
+    b.bind("hoge", hoge);
+    b.bind("fuga", fuga);
+    b.bind("piyo", piyo);
+    b.bind("square", square);
+    b.bind("add", add);
+    b.bind("test", test);
   }
   mrb_load_string(mrb,
                   "hoge()\n"
@@ -73,9 +72,9 @@ int main() {
   }
 
   {
-    using namespace mrubybind;
-    define_class(mrb, "Hoge", new_hoge);
-    define_class_method(mrb, "Hoge", "hoge", &Hoge::hoge);
+    mrubybind::MrubyBind b(mrb);
+    b.define_class("Hoge", new_hoge);
+    b.define_class_method("Hoge", "hoge", &Hoge::hoge);
   }
   mrb_load_string(mrb,
                   "h = Hoge.new(111)\n"

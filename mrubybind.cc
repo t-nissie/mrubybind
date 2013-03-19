@@ -2,13 +2,12 @@
 #include <mruby/compile.h>
 #include <mruby/dump.h>
 #include <mruby/proc.h>
+#include <mruby/variable.h>
 
 namespace mrubybind {
 
 static
 #include "mrubybind.dat"
-
-RClass *mod_mrubybind;
 
 static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
   mrb_value binder;
@@ -33,17 +32,23 @@ static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
   return binderp(mrb, mrb_voidp(o), RSTRING_PTR(p), args, narg);
 }
 
-int initialize(mrb_state* mrb) {
-  mod_mrubybind = mrb_define_module(mrb, "MrubyBind");
-  mrb_define_module_function(mrb, mod_mrubybind, "call_cfunc", call_cfunc,
-                             ARGS_REQ(2) | ARGS_REST());
-  mrb_define_module_function(mrb, mod_mrubybind, "call_cmethod", call_cmethod,
-                             ARGS_REQ(3) | ARGS_REST());
-  int n = mrb_read_irep(mrb, binder);
-  if (n < 0)
-    return 0;
-  mrb_run(mrb, mrb_proc_new(mrb, mrb->irep[n]), mrb_top_self(mrb));
-  return 1;
+MrubyBind::MrubyBind(mrb_state* mrb) {
+  this->mrb = mrb;
+  mrb_sym sym_mrubybind = mrb_intern(mrb, "MrubyBind");
+  if (mrb_const_defined(mrb, mrb_obj_value(mrb->kernel_module), sym_mrubybind)) {
+    this->mod_mrubybind = mrb_const_get(mrb, mrb_obj_value(mrb->kernel_module), sym_mrubybind);
+  } else {
+    RClass* mrubybind = mrb_define_module(mrb, "MrubyBind");
+    this->mod_mrubybind = mrb_obj_value(mrubybind);
+    mrb_define_module_function(mrb, mrubybind, "call_cfunc", call_cfunc,
+                               ARGS_REQ(2) | ARGS_REST());
+    mrb_define_module_function(mrb, mrubybind, "call_cmethod", call_cmethod,
+                               ARGS_REQ(3) | ARGS_REST());
+    int n = mrb_read_irep(mrb, binder);
+    if (n >= 0) {
+      mrb_run(mrb, mrb_proc_new(mrb, mrb->irep[n]), mrb_top_self(mrb));
+    }
+  }
 }
 
 }  // namespace mrubybind
