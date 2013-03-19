@@ -1,7 +1,6 @@
 #include <mruby.h>
 #include <mruby/compile.h>
 #include "mrubybind.h"
-using namespace mrubybind;
 
 #include <iostream>
 using namespace std;
@@ -50,17 +49,17 @@ void* new_hoge(int x) {
 
 int main() {
   mrb_state* mrb = mrb_open();
-  initialize_mrubybind(mrb);
 
-  bind(mrb, "hoge", hoge);
-  bind(mrb, "fuga", fuga);
-  bind(mrb, "piyo", piyo);
-  bind(mrb, "square", square);
-  mrb_load_string(mrb,
-                  "p square(1111)\n"
-                  );
-  bind(mrb, "add", add);
-  bind(mrb, "test", test);
+  {
+    using namespace mrubybind;
+    initialize(mrb);
+    bind(mrb, "hoge", hoge);
+    bind(mrb, "fuga", fuga);
+    bind(mrb, "piyo", piyo);
+    bind(mrb, "square", square);
+    bind(mrb, "add", add);
+    bind(mrb, "test", test);
+  }
   mrb_load_string(mrb,
                   "hoge()\n"
                   "fuga('piyo')\n"
@@ -73,8 +72,11 @@ int main() {
     mrb_p(mrb, mrb_obj_value(mrb->exc));
   }
 
-  define_class(mrb, "Hoge", new_hoge);
-  define_class_method(mrb, "Hoge", "hoge", &Hoge::hoge);
+  {
+    using namespace mrubybind;
+    define_class(mrb, "Hoge", new_hoge);
+    define_class_method(mrb, "Hoge", "hoge", &Hoge::hoge);
+  }
   mrb_load_string(mrb,
                   "h = Hoge.new(111)\n"
                   "p h.hoge(567)\n"

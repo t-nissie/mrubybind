@@ -8,7 +8,7 @@ namespace mrubybind {
 static
 #include "mrubybind.dat"
 
-RClass *mymodule;
+RClass *mod_mrubybind;
 
 static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
   mrb_value binder;
@@ -16,8 +16,8 @@ static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
   mrb_value* args;
   int narg;
   mrb_get_args(mrb, "oo*", &binder, &p, &args, &narg);
-  mrb_value (*binderp)(mrb_state*, void*, mrb_value*, int) =
-    (mrb_value (*)(mrb_state*, void*, mrb_value*, int))mrb_voidp(binder);
+  typedef mrb_value (*BindFunc)(mrb_state*, void*, mrb_value*, int);
+  BindFunc binderp = (BindFunc)mrb_voidp(binder);
   return binderp(mrb, mrb_voidp(p), args, narg);
 }
 
@@ -28,15 +28,17 @@ static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
   mrb_value* args;
   int narg;
   mrb_get_args(mrb, "ooo*", &binder, &o, &p, &args, &narg);
-  mrb_value (*binderp)(mrb_state*, void*, void*, mrb_value*, int) =
-    (mrb_value (*)(mrb_state*, void*, void*, mrb_value*, int))mrb_voidp(binder);
+  typedef mrb_value (*BindFunc)(mrb_state*, void*, void*, mrb_value*, int);
+  BindFunc binderp = (BindFunc)mrb_voidp(binder);
   return binderp(mrb, mrb_voidp(o), RSTRING_PTR(p), args, narg);
 }
 
-int initialize_mrubybind(mrb_state* mrb) {
-  mymodule = mrb_define_module(mrb, "MrubyBind");
-  mrb_define_module_function(mrb, mymodule, "call_cfunc", call_cfunc, ARGS_REQ(2) | ARGS_REST());
-  mrb_define_module_function(mrb, mymodule, "call_cmethod", call_cmethod, ARGS_REQ(3) | ARGS_REST());
+int initialize(mrb_state* mrb) {
+  mod_mrubybind = mrb_define_module(mrb, "MrubyBind");
+  mrb_define_module_function(mrb, mod_mrubybind, "call_cfunc", call_cfunc,
+                             ARGS_REQ(2) | ARGS_REST());
+  mrb_define_module_function(mrb, mod_mrubybind, "call_cmethod", call_cmethod,
+                             ARGS_REQ(3) | ARGS_REST());
   int n = mrb_read_irep(mrb, binder);
   if (n < 0)
     return 0;

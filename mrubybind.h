@@ -104,7 +104,9 @@ struct Binder {
 //===========================================================================
 // Interface
 
-int initialize_mrubybind(mrb_state* mrb);
+extern RClass *mod_mrubybind;
+
+int initialize(mrb_state* mrb);
 
 // Bind function.
 template <class Func>
@@ -112,7 +114,7 @@ void bind(mrb_state *mrb, const char* name, Func f) {
   mrb_value binder = mrb_voidp_value((void*)Binder<Func>::call);
   mrb_value fn = mrb_str_new_cstr(mrb, name);
   mrb_value fp = mrb_voidp_value((void*)f);
-  mrb_funcall(mrb, mrb_top_self(mrb), "mrubybind_define_function", 3, binder, fn, fp);
+  mrb_funcall(mrb, mrb_obj_value(mod_mrubybind), "define_function", 3, binder, fn, fp);
 }
 
 // Bind class.
@@ -121,7 +123,7 @@ void define_class(mrb_state* mrb, const char* class_name, Func f) {
   mrb_value binder = mrb_voidp_value((void*)Binder<Func>::call);
   mrb_value cn = mrb_str_new_cstr(mrb, class_name);
   mrb_value fp = mrb_voidp_value((void*)f);
-  mrb_funcall(mrb, mrb_top_self(mrb), "mrubybind_create_class", 3, binder, cn, fp);
+  mrb_funcall(mrb, mrb_obj_value(mod_mrubybind), "create_class", 3, binder, cn, fp);
 }
 
 // Bind class method.
@@ -131,7 +133,7 @@ void define_class_method(mrb_state* mrb, const char* class_name, const char* met
   mrb_value cn = mrb_str_new_cstr(mrb, class_name);
   mrb_value mn = mrb_str_new_cstr(mrb, method_name);
   mrb_value mp = mrb_str_new(mrb, (char*)&m, sizeof(m));
-  mrb_funcall(mrb, mrb_top_self(mrb), "mrubybind_define_class_method", 4, binder, cn, mn, mp);
+  mrb_funcall(mrb, mrb_obj_value(mod_mrubybind), "define_class_method", 4, binder, cn, mn, mp);
 }
 
 }  // namespace mrubybind
