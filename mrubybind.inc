@@ -1,3 +1,4 @@
+// This file is generated from gen_template.rb
 #define ARG(i)  Type<P##i>::get(args[i])
 #define CHECK(i)  Type<P##i>::check(args[i])
 
