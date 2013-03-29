@@ -32,7 +32,12 @@ void test(bool t) {
 
 class Hoge {
 public:
-  Hoge(int x) : x_(x) {}
+  Hoge(int x) : x_(x) {
+    cout << "Hoge::ctor(" << x << ")" << endl;
+  }
+  virtual ~Hoge() {
+    cout << "Hoge::dtor()" << endl;
+  }
   int hoge(int y) {
     return x_ + y;
   }
