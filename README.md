@@ -22,8 +22,7 @@ mrubybind - Binding library for mruby/C++
 
 3. Call it from mruby:
 
-        puts square(1111)
-        #=> 1234321
+        puts square(1111)  #=> 1234321
 
 ### Bind C++ class and method and call it from mruby
 
@@ -47,6 +46,8 @@ mrubybind - Binding library for mruby/C++
 
 2. Bind C++ class using mrubybind:
 
+        #include "mrubybind.h"
+        
         // Helper function for constructor.
         Foo* new_foo(int x) {
           return new Foo(x);
@@ -60,10 +61,10 @@ mrubybind - Binding library for mruby/C++
 
 3. Call it from mruby:
 
-        foo = Foo.new(123)
-        p foo
-        p foo.bar(567)
-
+        foo = Foo.new(123)  #=> Foo::ctor(123), 0x104516780
+        p foo               #=> #<Foo0x7fa828803d80>
+        p foo.bar(567)      #=> 690
+                            #=> Foo::dtor(), 0x104516780
 
 # License
 
