@@ -31,29 +31,43 @@ struct Binder<R (*)(%PARAMS%)> {
   }
 };
 
+// C* ctor(%PARAMS%);
+template<class C%CLASSES1%>
+struct ClassBinder<C* (*)(%PARAMS%)> {
+  static void ctor(mrb_state* mrb, mrb_value self, void* p, mrb_value* args, int narg) {
+    ASSERT(narg == %NPARAM%); %ASSERTS%
+    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))p;
+    C* instance = ctor(%ARGS%);
+    DATA_TYPE(self) = &ClassBinder<C>::type_info;
+    DATA_PTR(self) = instance;
+  }
+};
+
 EOD
 
 METHOD_TMPL = <<EOD
 // class C { void f(%PARAMS%) };
 template<class C%CLASSES1%>
-struct Binder<void (C::*)(%PARAMS%)> {
-  static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
+struct ClassBinder<void (C::*)(%PARAMS%)> {
+  static mrb_value call(mrb_state* mrb, mrb_value self, void* pp, mrb_value* args, int narg) {
     ASSERT(narg == %NPARAM%);%ASSERTS%
+    C* instance = static_cast<C*>(mrb_get_datatype(mrb, self, &ClassBinder<C>::type_info));
     typedef void (C::*M)(%PARAMS%);
-    M method = *(M*)p;
-    (((C*)o)->*method)(%ARGS%);
+    M method = *(M*)pp;
+    (instance->*method)(%ARGS%);
     return mrb_nil_value();
   }
 };
 
 // class C { R f(%PARAMS%) };
 template<class C, class R%CLASSES1%>
-struct Binder<R (C::*)(%PARAMS%)> {
-  static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
+struct ClassBinder<R (C::*)(%PARAMS%)> {
+  static mrb_value call(mrb_state* mrb, mrb_value self, void* pp, mrb_value* args, int narg) {
     ASSERT(narg == %NPARAM%);%ASSERTS%
+    C* instance = static_cast<C*>(mrb_get_datatype(mrb, self, &ClassBinder<C>::type_info));
     typedef R (C::*M)(%PARAMS%);
-    M method = *(M*)p;
-    R result = (((C*)o)->*method)(%ARGS%);
+    M method = *(M*)pp;
+    R result = (instance->*method)(%ARGS%);
     return Type<R>::ret(mrb, result);
   }
 };

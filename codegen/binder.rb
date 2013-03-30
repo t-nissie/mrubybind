@@ -8,19 +8,18 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.define_class(binder, klass, f)
-    k = Kernel.const_set(klass, Class.new)
-    k.class_eval do
+  def MrubyBind.bind_class(binder, klass, ctor)
+    Kernel.const_get(klass).class_eval do
       define_method(:initialize) do |*args|
-        @instance = MrubyBind::call_cfunc(binder, f, *args)
+        MrubyBind::call_ctorfunc(binder, self, ctor, *args)
       end
     end
   end
 
-  def MrubyBind.define_class_method(binder, klass, func, f)
+  def MrubyBind.bind_class_method(binder, klass, func, f)
     Kernel.const_get(klass).class_eval do
       define_method(func) do |*args|
-        MrubyBind::call_cmethod(binder, @instance, f, *args)
+        MrubyBind::call_cmethod(binder, self, f, *args)
       end
     end
   end

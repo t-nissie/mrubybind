@@ -21,16 +21,29 @@ static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
   return binderp(mrb, mrb_voidp(p), args, narg);
 }
 
-static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
+static mrb_value call_ctorfunc(mrb_state *mrb, mrb_value self) {
   mrb_value binder;
   mrb_value o;
   mrb_value p;
   mrb_value* args;
   int narg;
   mrb_get_args(mrb, "ooo*", &binder, &o, &p, &args, &narg);
-  typedef mrb_value (*BindFunc)(mrb_state*, void*, void*, mrb_value*, int);
+  typedef void (*BindFunc)(mrb_state*, mrb_value, void*, mrb_value*, int);
   BindFunc binderp = (BindFunc)mrb_voidp(binder);
-  return binderp(mrb, mrb_voidp(o), RSTRING_PTR(p), args, narg);
+  binderp(mrb, o, mrb_voidp(p), args, narg);
+  return self;
+}
+
+static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
+  mrb_value binder;
+  mrb_value o;
+  mrb_value p;
+  mrb_value* args;
+  int narg;
+  mrb_get_args(mrb, "ooS*", &binder, &o, &p, &args, &narg);
+  typedef mrb_value (*BindFunc)(mrb_state*, mrb_value, void*, mrb_value*, int);
+  BindFunc binderp = (BindFunc)mrb_voidp(binder);
+  return binderp(mrb, o, RSTRING_PTR(p), args, narg);
 }
 
 MrubyBind::MrubyBind(mrb_state* mrb) {
@@ -43,6 +56,8 @@ MrubyBind::MrubyBind(mrb_state* mrb) {
     this->mod_mrubybind = mrb_obj_value(mrubybind);
     mrb_define_module_function(mrb, mrubybind, "call_cfunc", call_cfunc,
                                ARGS_REQ(2) | ARGS_REST());
+    mrb_define_module_function(mrb, mrubybind, "call_ctorfunc", call_ctorfunc,
+                               ARGS_REQ(3) | ARGS_REST());
     mrb_define_module_function(mrb, mrubybind, "call_cmethod", call_cmethod,
                                ARGS_REQ(3) | ARGS_REST());
     int n = mrb_read_irep(mrb, binder);

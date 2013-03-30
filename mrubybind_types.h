@@ -99,6 +99,19 @@ struct Binder {
   //static mrb_value call(mrb_state* mrb, void* p, mrb_value* args, int narg) = 0;
 };
 
+// Template class for Binder.
+// Binder template class is specialized with type.
+template <class C>
+struct ClassBinder {
+  static struct mrb_data_type type_info;
+  static void dtor(mrb_state*, void* p) {
+    C* instance = static_cast<C*>(p);
+    delete instance;
+  }
+};
+template<class C>
+mrb_data_type ClassBinder<C>::type_info = { "???", dtor };
+
 // Includes generated template specialization.
 #include "mrubybind.inc"
 

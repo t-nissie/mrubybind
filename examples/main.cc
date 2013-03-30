@@ -33,10 +33,10 @@ void test(bool t) {
 class Hoge {
 public:
   Hoge(int x) : x_(x) {
-    cout << "Hoge::ctor(" << x << ")" << endl;
+    cout << "Hoge::ctor(" << x << "), " << this << endl;
   }
   virtual ~Hoge() {
-    cout << "Hoge::dtor()" << endl;
+    cout << "Hoge::dtor(), " << this << endl;
   }
   int hoge(int y) {
     return x_ + y;
@@ -46,8 +46,8 @@ private:
   int x_;
 };
 
-void* new_hoge(int x) {
-  return (void*)new Hoge(x);
+Hoge* new_hoge(int x) {
+  return new Hoge(x);
 }
 
 
@@ -78,12 +78,13 @@ int main() {
 
   {
     mrubybind::MrubyBind b(mrb);
-    b.define_class("Hoge", new_hoge);
-    b.define_class_method("Hoge", "hoge", &Hoge::hoge);
+    b.bind_class("Hoge", new_hoge);
+    b.bind_class_method("Hoge", "hoge", &Hoge::hoge);
   }
   mrb_load_string(mrb,
-                  "h = Hoge.new(111)\n"
-                  "p h.hoge(567)\n"
+                  "hoge = Hoge.new(123)\n"
+                  "p hoge\n"
+                  "p hoge.hoge(567)\n"
                   );
 
   if (mrb->exc) {

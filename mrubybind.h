@@ -23,21 +23,24 @@ class MrubyBind {
 
   // Bind class.
   template <class Func>
-  void define_class(const char* class_name, Func f) {
-    mrb_value binder = mrb_voidp_value((void*)Binder<Func>::call);
+  void bind_class(const char* class_name, Func ctor) {
+    struct RClass *tc = mrb_define_class(mrb, class_name, mrb->object_class);
+    MRB_SET_INSTANCE_TT(tc, MRB_TT_DATA);
+
+    mrb_value binder = mrb_voidp_value((void*)ClassBinder<Func>::ctor);
     mrb_value cn = mrb_str_new_cstr(mrb, class_name);
-    mrb_value fp = mrb_voidp_value((void*)f);
-    mrb_funcall(mrb, mod_mrubybind, "define_class", 3, binder, cn, fp);
+    mrb_value fp = mrb_voidp_value((void*)ctor);
+    mrb_funcall(mrb, mod_mrubybind, "bind_class", 3, binder, cn, fp);
   }
 
   // Bind class method.
   template <class Method>
-  void define_class_method(const char* class_name, const char* method_name, Method m) {
-    mrb_value binder = mrb_voidp_value((void*)Binder<Method>::call);
+  void bind_class_method(const char* class_name, const char* method_name, Method m) {
+    mrb_value binder = mrb_voidp_value((void*)ClassBinder<Method>::call);
     mrb_value cn = mrb_str_new_cstr(mrb, class_name);
     mrb_value mn = mrb_str_new_cstr(mrb, method_name);
     mrb_value mp = mrb_str_new(mrb, (char*)&m, sizeof(m));
-    mrb_funcall(mrb, mod_mrubybind, "define_class_method", 4, binder, cn, mn, mp);
+    mrb_funcall(mrb, mod_mrubybind, "bind_class_method", 4, binder, cn, mn, mp);
   }
 
  private:
