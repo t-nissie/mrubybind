@@ -5,40 +5,19 @@
 #include <iostream>
 using namespace std;
 
-void hoge() {
-  cout << "hoge called" << endl;
-}
-
-void fuga(const char* str) {
-  cout << "fuga called: " << str << endl;
-}
-
-std::string piyo(const std::string& s) {
-  return s + s;
-}
-
 int square(int x) {
   return x * x;
 }
 
-double add(double x, double y) {
-  return x + y;
-}
-
-void test(bool t) {
-  cout << t << endl;
-}
-
-
-class Hoge {
+class Foo {
 public:
-  Hoge(int x) : x_(x) {
-    cout << "Hoge::ctor(" << x << "), " << this << endl;
+  Foo(int x) : x_(x) {
+    cout << "Foo::ctor(" << x << "), " << this << endl;
   }
-  virtual ~Hoge() {
-    cout << "Hoge::dtor(), " << this << endl;
+  virtual ~Foo() {
+    cout << "Foo::dtor(), " << this << endl;
   }
-  int hoge(int y) {
+  int bar(int y) {
     return x_ + y;
   }
 
@@ -46,31 +25,19 @@ private:
   int x_;
 };
 
-Hoge* new_hoge(int x) {
-  return new Hoge(x);
+Foo* new_foo(int x) {
+  return new Foo(x);
 }
-
-
 
 int main() {
   mrb_state* mrb = mrb_open();
 
   {
     mrubybind::MrubyBind b(mrb);
-    b.bind("hoge", hoge);
-    b.bind("fuga", fuga);
-    b.bind("piyo", piyo);
     b.bind("square", square);
-    b.bind("add", add);
-    b.bind("test", test);
   }
   mrb_load_string(mrb,
-                  "hoge()\n"
-                  "fuga('piyo')\n"
-                  "p piyo('abc')\n"
-                  "p test('')\n"
-                  "p square(1111)\n"
-                  "p add(1.23, 9.87)\n"
+                  "puts square(1111)\n"
                   );
   if (mrb->exc) {
     mrb_p(mrb, mrb_obj_value(mrb->exc));
@@ -78,13 +45,13 @@ int main() {
 
   {
     mrubybind::MrubyBind b(mrb);
-    b.bind_class("Hoge", new_hoge);
-    b.bind_class_method("Hoge", "hoge", &Hoge::hoge);
+    b.bind_class("Foo", new_foo);
+    b.bind_class_method("Foo", "bar", &Foo::bar);
   }
   mrb_load_string(mrb,
-                  "hoge = Hoge.new(123)\n"
-                  "p hoge\n"
-                  "p hoge.hoge(567)\n"
+                  "foo = Foo.new(123)\n"
+                  "p foo\n"
+                  "p foo.bar(567)\n"
                   );
 
   if (mrb->exc) {
