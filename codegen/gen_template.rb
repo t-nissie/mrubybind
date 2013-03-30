@@ -34,7 +34,7 @@ struct Binder<R (*)(%PARAMS%)> {
 EOD
 
 METHOD_TMPL = <<EOD
-// class C { void f(P0) };
+// class C { void f(%PARAMS%) };
 template<class C%CLASSES1%>
 struct Binder<void (C::*)(%PARAMS%)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -46,7 +46,7 @@ struct Binder<void (C::*)(%PARAMS%)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(%PARAMS%) };
 template<class C, class R%CLASSES1%>
 struct Binder<R (C::*)(%PARAMS%)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {

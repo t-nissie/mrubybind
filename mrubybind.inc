@@ -24,7 +24,7 @@ struct Binder<R (*)(void)> {
   }
 };
 
-// class C { void f(P0) };
+// class C { void f(void) };
 template<class C>
 struct Binder<void (C::*)(void)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -36,7 +36,7 @@ struct Binder<void (C::*)(void)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(void) };
 template<class C, class R>
 struct Binder<R (C::*)(void)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -116,7 +116,7 @@ struct Binder<R (*)(P0, P1)> {
   }
 };
 
-// class C { void f(P0) };
+// class C { void f(P0, P1) };
 template<class C, class P0, class P1>
 struct Binder<void (C::*)(P0, P1)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -128,7 +128,7 @@ struct Binder<void (C::*)(P0, P1)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(P0, P1) };
 template<class C, class R, class P0, class P1>
 struct Binder<R (C::*)(P0, P1)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -162,7 +162,7 @@ struct Binder<R (*)(P0, P1, P2)> {
   }
 };
 
-// class C { void f(P0) };
+// class C { void f(P0, P1, P2) };
 template<class C, class P0, class P1, class P2>
 struct Binder<void (C::*)(P0, P1, P2)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -174,7 +174,7 @@ struct Binder<void (C::*)(P0, P1, P2)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(P0, P1, P2) };
 template<class C, class R, class P0, class P1, class P2>
 struct Binder<R (C::*)(P0, P1, P2)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -208,7 +208,7 @@ struct Binder<R (*)(P0, P1, P2, P3)> {
   }
 };
 
-// class C { void f(P0) };
+// class C { void f(P0, P1, P2, P3) };
 template<class C, class P0, class P1, class P2, class P3>
 struct Binder<void (C::*)(P0, P1, P2, P3)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -220,7 +220,7 @@ struct Binder<void (C::*)(P0, P1, P2, P3)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(P0, P1, P2, P3) };
 template<class C, class R, class P0, class P1, class P2, class P3>
 struct Binder<R (C::*)(P0, P1, P2, P3)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -254,7 +254,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4)> {
   }
 };
 
-// class C { void f(P0) };
+// class C { void f(P0, P1, P2, P3, P4) };
 template<class C, class P0, class P1, class P2, class P3, class P4>
 struct Binder<void (C::*)(P0, P1, P2, P3, P4)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -266,7 +266,7 @@ struct Binder<void (C::*)(P0, P1, P2, P3, P4)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(P0, P1, P2, P3, P4) };
 template<class C, class R, class P0, class P1, class P2, class P3, class P4>
 struct Binder<R (C::*)(P0, P1, P2, P3, P4)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -300,7 +300,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4, P5)> {
   }
 };
 
-// class C { void f(P0) };
+// class C { void f(P0, P1, P2, P3, P4, P5) };
 template<class C, class P0, class P1, class P2, class P3, class P4, class P5>
 struct Binder<void (C::*)(P0, P1, P2, P3, P4, P5)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {
@@ -312,7 +312,7 @@ struct Binder<void (C::*)(P0, P1, P2, P3, P4, P5)> {
   }
 };
 
-// class C { R f(P0) };
+// class C { R f(P0, P1, P2, P3, P4, P5) };
 template<class C, class R, class P0, class P1, class P2, class P3, class P4, class P5>
 struct Binder<R (C::*)(P0, P1, P2, P3, P4, P5)> {
   static mrb_value call(mrb_state* mrb, void* o, void* p, mrb_value* args, int narg) {

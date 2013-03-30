@@ -1,6 +1,9 @@
 #ifndef __MRUBYBIND_H__
 #define __MRUBYBIND_H__
 
+#include <mruby.h>
+#include <mruby/class.h>
+#include <mruby/data.h>
 #include "mrubybind_types.h"
 
 namespace mrubybind {
@@ -24,7 +27,7 @@ class MrubyBind {
     mrb_value binder = mrb_voidp_value((void*)Binder<Func>::call);
     mrb_value cn = mrb_str_new_cstr(mrb, class_name);
     mrb_value fp = mrb_voidp_value((void*)f);
-    mrb_funcall(mrb, mod_mrubybind, "create_class", 3, binder, cn, fp);
+    mrb_funcall(mrb, mod_mrubybind, "define_class", 3, binder, cn, fp);
   }
 
   // Bind class method.

@@ -8,7 +8,7 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.create_class(binder, klass, f)
+  def MrubyBind.define_class(binder, klass, f)
     k = Kernel.const_set(klass, Class.new)
     k.class_eval do
       define_method(:initialize) do |*args|
