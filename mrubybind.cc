@@ -10,6 +10,26 @@ namespace mrubybind {
 static
 #include "mrubybind.dat"
 
+const char Type<int>::TYPE_NAME[] = "Fixnum";
+const char Type<float>::TYPE_NAME[] = "Float";
+const char Type<double>::TYPE_NAME[] = "Float";
+const char Type<const char*>::TYPE_NAME[] = "String";
+const char Type<std::string>::TYPE_NAME[] = "String";
+const char Type<const std::string>::TYPE_NAME[] = "String";
+const char Type<const std::string&>::TYPE_NAME[] = "String";
+const char Type<bool>::TYPE_NAME[] = "Bool";
+const char Type<void*>::TYPE_NAME[] = "Voidp";
+
+mrb_value raise(mrb_state *mrb, int parameter_index,
+                const char* required_type_name, mrb_value value) {
+  const char * argument_class_name = mrb_obj_classname(mrb, value);
+  mrb_raisef(mrb, E_TYPE_ERROR, "Illegal type %S, %S required, but %S(%S)",
+             mrb_fixnum_value(parameter_index),
+             mrb_str_new_cstr(mrb, required_type_name),
+             mrb_str_new_cstr(mrb, argument_class_name), value);
+  return mrb_nil_value();
+}
+
 static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
   mrb_value binder;
   mrb_value func_ptr_v;
@@ -28,7 +48,7 @@ static mrb_value call_ctorfunc(mrb_state *mrb, mrb_value self) {
   mrb_value* args;
   int narg;
   mrb_get_args(mrb, "ooo*", &binder, &self_v, &new_func_ptr_v, &args, &narg);
-  typedef void (*BindFunc)(mrb_state*, mrb_value, void*, mrb_value*, int);
+  typedef mrb_value (*BindFunc)(mrb_state*, mrb_value, void*, mrb_value*, int);
   BindFunc binderp = reinterpret_cast<BindFunc>(mrb_voidp(binder));
   binderp(mrb, self_v, mrb_voidp(new_func_ptr_v), args, narg);
   return self;

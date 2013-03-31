@@ -23,6 +23,7 @@ struct Type {
 // Fixnum
 template<>
 struct Type<int> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_fixnum_p(v); }
   static int get(mrb_value v) { return mrb_fixnum(v); }
   static mrb_value ret(mrb_state*, int i) { return mrb_fixnum_value(i); }
@@ -31,6 +32,7 @@ struct Type<int> {
 // float
 template<>
 struct Type<float> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_float_p(v); }
   static float get(mrb_value v) { return mrb_float(v); }
   static mrb_value ret(mrb_state*, float f) { return mrb_float_value(f); }
@@ -38,7 +40,8 @@ struct Type<float> {
 
 // double
 template<>
-struct Type<mrb_float> {
+struct Type<double> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_float_p(v); }
   static double get(mrb_value v) { return mrb_float(v); }
   static mrb_value ret(mrb_state*, double f) { return mrb_float_value(f); }
@@ -47,6 +50,7 @@ struct Type<mrb_float> {
 // String
 template<>
 struct Type<const char*> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_string_p(v); }
   static const char* get(mrb_value v) { return RSTRING_PTR(v); }
   static mrb_value ret(mrb_state* mrb, const char* s) { return mrb_str_new_cstr(mrb, s); }
@@ -54,6 +58,7 @@ struct Type<const char*> {
 
 template<>
 struct Type<std::string> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_string_p(v); }
   static const std::string get(mrb_value v) { return std::string(RSTRING_PTR(v), RSTRING_LEN(v)); }
   static mrb_value ret(mrb_state* mrb, const std::string& s) { return mrb_str_new(mrb, s.c_str(), s.size()); }
@@ -61,6 +66,7 @@ struct Type<std::string> {
 
 template<>
 struct Type<const std::string> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_string_p(v); }
   static const std::string get(mrb_value v) { return std::string(RSTRING_PTR(v), RSTRING_LEN(v)); }
   static mrb_value ret(mrb_state* mrb, const std::string& s) { return mrb_str_new(mrb, s.c_str(), s.size()); }
@@ -68,6 +74,7 @@ struct Type<const std::string> {
 
 template<>
 struct Type<const std::string&> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_string_p(v); }
   static const std::string get(mrb_value v) { return std::string(RSTRING_PTR(v), RSTRING_LEN(v)); }
   static mrb_value ret(mrb_state* mrb, const std::string& s) { return mrb_str_new(mrb, s.c_str(), s.size()); }
@@ -76,6 +83,7 @@ struct Type<const std::string&> {
 // Boolean
 template<>
 struct Type<bool> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return 1; }
   static bool get(mrb_value v) { return mrb_test(v); }
   static mrb_value ret(mrb_state* mrb, bool b) { return b ? mrb_true_value() : mrb_false_value(); }
@@ -84,6 +92,7 @@ struct Type<bool> {
 // Raw pointer
 template<>
 struct Type<void*> {
+  static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_voidp_p(v); }
   static void* get(mrb_value v) { return mrb_voidp(v); }
   static mrb_value ret(mrb_state* mrb, void* p) { return mrb_voidp_value(p); }
@@ -115,6 +124,9 @@ struct ClassBinder {
 };
 template<class C>
 mrb_data_type ClassBinder<C>::type_info = { "???", dtor };
+
+mrb_value raise(mrb_state *mrb, int parameter_index,
+                const char* required_type_name, mrb_value value);
 
 // Includes generated template specialization.
 #include "mrubybind.inc"
