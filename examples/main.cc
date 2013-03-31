@@ -43,7 +43,7 @@ int main() {
     b.bind("emphasize", emphasize);
   }
   mrb_load_string(mrb,
-                  "puts square(1111)\n"
+                  "puts square(1111, 2)\n"
                   "puts emphasize('Hello, mruby!')\n"
                   );
   if (mrb->exc) {
