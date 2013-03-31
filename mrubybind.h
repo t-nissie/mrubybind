@@ -18,8 +18,9 @@ class MrubyBind {
     mrb_value binder = mrb_voidp_value((void*)Binder<Func>::call);
     mrb_value func_name_v = mrb_str_new_cstr(mrb_, func_name);
     mrb_value func_ptr_v = mrb_voidp_value(reinterpret_cast<void*>(func_ptr));
-    mrb_funcall(mrb_, mod_mrubybind_, "define_function", 3, binder, func_name_v,
-                func_ptr_v);
+    mrb_value nparam_v = mrb_fixnum_value(Binder<Func>::NPARAM);
+    mrb_funcall(mrb_, mod_mrubybind_, "define_function", 4, binder, func_name_v,
+                func_ptr_v, nparam_v);
   }
 
   // Bind class.
@@ -30,8 +31,9 @@ class MrubyBind {
     mrb_value binder = mrb_voidp_value((void*)ClassBinder<Func>::ctor);
     mrb_value class_name_v = mrb_str_new_cstr(mrb_, class_name);
     mrb_value new_func_ptr_v = mrb_voidp_value((void*)new_func_ptr);
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_class", 3, binder, class_name_v,
-                new_func_ptr_v);
+    mrb_value nparam_v = mrb_fixnum_value(ClassBinder<Func>::NPARAM);
+    mrb_funcall(mrb_, mod_mrubybind_, "bind_class", 4, binder, class_name_v,
+                new_func_ptr_v, nparam_v);
   }
 
   // Bind class method.
@@ -44,8 +46,9 @@ class MrubyBind {
     mrb_value method_pptr_v = mrb_str_new(mrb_,
                                           reinterpret_cast<char*>(&method_ptr),
                                           sizeof(method_ptr));
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_class_method", 4, binder,
-                class_name_v, method_name_v, method_pptr_v);
+    mrb_value nparam_v = mrb_fixnum_value(ClassBinder<Method>::NPARAM);
+    mrb_funcall(mrb_, mod_mrubybind_, "bind_class_method", 5, binder,
+                class_name_v, method_name_v, method_pptr_v, nparam_v);
   }
 
  private:
