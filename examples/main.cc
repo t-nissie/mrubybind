@@ -3,10 +3,15 @@
 #include "mrubybind.h"
 
 #include <iostream>
+#include <string>
 using namespace std;
 
 int square(int x) {
   return x * x;
+}
+
+string emphasize(const char* str) {
+  return "* " + string(str) + " *";
 }
 
 class Foo {
@@ -35,9 +40,11 @@ int main() {
   {
     mrubybind::MrubyBind b(mrb);
     b.bind("square", square);
+    b.bind("emphasize", emphasize);
   }
   mrb_load_string(mrb,
                   "puts square(1111)\n"
+                  "puts emphasize('Hello, mruby!')\n"
                   );
   if (mrb->exc) {
     mrb_p(mrb, mrb_obj_value(mrb->exc));

@@ -96,6 +96,7 @@ struct Type<void*> {
 // Binder template class is specialized with type.
 template <class T>
 struct Binder {
+  // Template specialization.
   //static mrb_value call(mrb_state* mrb, void* p, mrb_value* args, int narg) = 0;
 };
 
@@ -108,6 +109,9 @@ struct ClassBinder {
     C* instance = static_cast<C*>(p);
     delete instance;
   }
+
+  // Template specialization.
+  //static void ctor(mrb_state* mrb, mrb_value self, void* new_func_ptr, mrb_value* args, int narg) {
 };
 template<class C>
 mrb_data_type ClassBinder<C>::type_info = { "???", dtor };
