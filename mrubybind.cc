@@ -11,6 +11,7 @@ static
 #include "mrubybind.dat"
 
 const char Type<int>::TYPE_NAME[] = "Fixnum";
+const char Type<unsigned int>::TYPE_NAME[] = "Fixnum";
 const char Type<float>::TYPE_NAME[] = "Float";
 const char Type<double>::TYPE_NAME[] = "Float";
 const char Type<const char*>::TYPE_NAME[] = "String";
@@ -30,7 +31,7 @@ mrb_value raise(mrb_state *mrb, int parameter_index,
   return mrb_nil_value();
 }
 
-static mrb_value call_cfunc(mrb_state *mrb, mrb_value self) {
+static mrb_value call_cfunc(mrb_state *mrb, mrb_value /*self*/) {
   mrb_value binder;
   mrb_value func_ptr_v;
   mrb_value* args;
@@ -54,7 +55,7 @@ static mrb_value call_ctorfunc(mrb_state *mrb, mrb_value self) {
   return self;
 }
 
-static mrb_value call_cmethod(mrb_state *mrb, mrb_value self) {
+static mrb_value call_cmethod(mrb_state *mrb, mrb_value /*self*/) {
   mrb_value binder;
   mrb_value self_v;
   mrb_value method_pptr_v;

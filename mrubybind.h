@@ -9,8 +9,14 @@
 namespace mrubybind {
 
 class MrubyBind {
- public:
+public:
   MrubyBind(mrb_state* mrb);
+
+  // Bind constant value.
+  template <class T>
+  void bind_const(const char* name, T v) {
+    mrb_define_const(mrb_, mrb_->kernel_module, name, Type<T>::ret(mrb_, v));
+  }
 
   // Bind function.
   template <class Func>
@@ -51,7 +57,7 @@ class MrubyBind {
                 class_name_v, method_name_v, method_pptr_v, nparam_v);
   }
 
- private:
+private:
   mrb_state* mrb_;
   mrb_value mod_mrubybind_;
 };

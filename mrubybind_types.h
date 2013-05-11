@@ -29,6 +29,14 @@ struct Type<int> {
   static mrb_value ret(mrb_state*, int i) { return mrb_fixnum_value(i); }
 };
 
+template<>
+struct Type<unsigned int> {
+  static const char TYPE_NAME[];
+  static int check(mrb_value v) { return mrb_fixnum_p(v); }
+  static unsigned int get(mrb_value v) { return mrb_fixnum(v); }
+  static mrb_value ret(mrb_state*, unsigned int i) { return mrb_fixnum_value(i); }
+};
+
 // float
 template<>
 struct Type<float> {
@@ -84,9 +92,9 @@ struct Type<const std::string&> {
 template<>
 struct Type<bool> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return 1; }
+  static int check(mrb_value /*v*/) { return 1; }
   static bool get(mrb_value v) { return mrb_test(v); }
-  static mrb_value ret(mrb_state* mrb, bool b) { return b ? mrb_true_value() : mrb_false_value(); }
+  static mrb_value ret(mrb_state* /*mrb*/, bool b) { return b ? mrb_true_value() : mrb_false_value(); }
 };
 
 // Raw pointer
@@ -95,7 +103,7 @@ struct Type<void*> {
   static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_voidp_p(v); }
   static void* get(mrb_value v) { return mrb_voidp(v); }
-  static mrb_value ret(mrb_state* mrb, void* p) { return mrb_voidp_value(p); }
+  static mrb_value ret(mrb_state* /*mrb*/, void* p) { return mrb_voidp_value(p); }
 };
 
 //===========================================================================

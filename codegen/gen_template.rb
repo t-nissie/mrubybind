@@ -1,5 +1,5 @@
 
-MAX_PARAM = 6
+MAX_PARAM = 10
 
 HEADER = <<EOD
 // This file is generated from gen_template.rb
@@ -92,12 +92,12 @@ def embed_template(str, nparam)
     params = 'void'
     args = ''
     classes = ''
-    asserts = ''
+    asserts = '(void)(mrb);(void)(args);(void)(narg);'  # Surppress warning.
   else
     params = (0...nparam).map {|i| "P#{i}"}.join(', ')
     args = (0...nparam).map {|i| "ARG(#{i})"}.join(', ')
     classes = (0...nparam).map {|i| "class P#{i}"}.join(', ')
-    asserts = (0...nparam).map {|i| "CHECK(#{i});"}.join(' ')
+    asserts = (0...nparam).map {|i| "(void)(narg); CHECK(#{i});"}.join(' ')
   end
 
   table = {
