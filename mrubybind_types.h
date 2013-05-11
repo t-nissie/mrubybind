@@ -24,16 +24,16 @@ struct Type {
 template<>
 struct Type<int> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return mrb_fixnum_p(v); }
-  static int get(mrb_value v) { return mrb_fixnum(v); }
+  static int check(mrb_value v) { return mrb_fixnum_p(v) || mrb_float_p(v); }
+  static int get(mrb_value v) { return mrb_fixnum_p(v) ? mrb_fixnum(v) : mrb_float(v); }
   static mrb_value ret(mrb_state*, int i) { return mrb_fixnum_value(i); }
 };
 
 template<>
 struct Type<unsigned int> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return mrb_fixnum_p(v); }
-  static unsigned int get(mrb_value v) { return mrb_fixnum(v); }
+  static int check(mrb_value v) { return mrb_fixnum_p(v) || mrb_float_p(v); }
+  static unsigned int get(mrb_value v) { return mrb_fixnum_p(v) ? mrb_fixnum(v) : mrb_float(v); }
   static mrb_value ret(mrb_state*, unsigned int i) { return mrb_fixnum_value(i); }
 };
 
@@ -41,8 +41,8 @@ struct Type<unsigned int> {
 template<>
 struct Type<float> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return mrb_float_p(v); }
-  static float get(mrb_value v) { return mrb_float(v); }
+  static int check(mrb_value v) { return mrb_float_p(v) || mrb_fixnum_p(v); }
+  static float get(mrb_value v) { return mrb_float_p(v) ? mrb_float(v) : mrb_fixnum(v); }
   static mrb_value ret(mrb_state*, float f) { return mrb_float_value(f); }
 };
 
@@ -50,8 +50,8 @@ struct Type<float> {
 template<>
 struct Type<double> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return mrb_float_p(v); }
-  static double get(mrb_value v) { return mrb_float(v); }
+  static int check(mrb_value v) { return mrb_float_p(v) || mrb_fixnum_p(v); }
+  static double get(mrb_value v) { return mrb_float_p(v) ? mrb_float(v) : mrb_fixnum(v); }
   static mrb_value ret(mrb_state*, double f) { return mrb_float_value(f); }
 };
 
