@@ -67,7 +67,15 @@ static mrb_value call_cmethod(mrb_state *mrb, mrb_value /*self*/) {
   return binderp(mrb, self_v, RSTRING_PTR(method_pptr_v), args, narg);
 }
 
-MrubyBind::MrubyBind(mrb_state* mrbxx) : mrb_(mrbxx) {
+MrubyBind::MrubyBind(mrb_state* mrb) : mrb_(mrb), mod_(mrb_->kernel_module) {
+  Initialize();
+}
+
+MrubyBind::MrubyBind(mrb_state* mrb, RClass* mod) : mrb_(mrb), mod_(mod) {
+  Initialize();
+}
+
+void MrubyBind::Initialize() {
   mrb_sym sym_mrubybind = mrb_intern(mrb_, "MrubyBind");
   if (mrb_const_defined(mrb_, mrb_obj_value(mrb_->kernel_module),
                         sym_mrubybind)) {
