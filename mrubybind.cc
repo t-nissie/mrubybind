@@ -75,7 +75,12 @@ MrubyBind::MrubyBind(mrb_state* mrb, RClass* mod) : mrb_(mrb), mod_(mod) {
   Initialize();
 }
 
+MrubyBind::~MrubyBind() {
+  mrb_gc_arena_restore(mrb_, arena_index_);
+}
+
 void MrubyBind::Initialize() {
+  arena_index_ = mrb_gc_arena_save(mrb_);
   mrb_sym sym_mrubybind = mrb_intern(mrb_, "MrubyBind");
   if (mrb_const_defined(mrb_, mrb_obj_value(mrb_->kernel_module),
                         sym_mrubybind)) {

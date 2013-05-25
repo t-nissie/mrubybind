@@ -12,6 +12,7 @@ class MrubyBind {
 public:
   MrubyBind(mrb_state* mrb);
   MrubyBind(mrb_state* mrb, RClass* mod);
+  ~MrubyBind();
 
   // Bind constant value.
   template <class T>
@@ -65,6 +66,7 @@ private:
   mrb_state* mrb_;
   mrb_value mod_mrubybind_;
   RClass* mod_;
+  int arena_index_;
 };
 
 }  // namespace mrubybind
