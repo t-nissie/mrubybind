@@ -43,7 +43,7 @@ struct Type<float> {
   static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_float_p(v) || mrb_fixnum_p(v); }
   static float get(mrb_value v) { return mrb_float_p(v) ? mrb_float(v) : mrb_fixnum(v); }
-  static mrb_value ret(mrb_state*, float f) { return mrb_float_value(f); }
+  static mrb_value ret(mrb_state* mrb, float f) { return mrb_float_value(mrb, f); }
 };
 
 // double
@@ -52,7 +52,7 @@ struct Type<double> {
   static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_float_p(v) || mrb_fixnum_p(v); }
   static double get(mrb_value v) { return mrb_float_p(v) ? mrb_float(v) : mrb_fixnum(v); }
-  static mrb_value ret(mrb_state*, double f) { return mrb_float_value(f); }
+  static mrb_value ret(mrb_state* mrb, double f) { return mrb_float_value(mrb, f); }
 };
 
 // String
@@ -103,7 +103,7 @@ struct Type<void*> {
   static const char TYPE_NAME[];
   static int check(mrb_value v) { return mrb_voidp_p(v); }
   static void* get(mrb_value v) { return mrb_voidp(v); }
-  static mrb_value ret(mrb_state* /*mrb*/, void* p) { return mrb_voidp_value(p); }
+  static mrb_value ret(mrb_state* mrb, void* p) { return mrb_voidp_value(mrb, p); }
 };
 
 //===========================================================================
