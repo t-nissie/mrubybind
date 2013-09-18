@@ -3,6 +3,17 @@ mrubybind - Binding library for mruby/C++
 
 ## Usage
 
+### How to use
+
+1. Put source codes into your project.
+  * mrubybind.cc
+  * mrubybind.dat
+  * mrubybind.h
+  * mrubybind.inc
+  * mrubybind_types.h
+2. Include "mrubybind.h"
+
+
 ### Bind C function and call it from mruby
 
 1. C function (Any type you want):
