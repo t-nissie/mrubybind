@@ -48,7 +48,7 @@ struct ClassBinder<void (C::*)(void)> {
   static const int NPARAM = 0;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(mrb);(void)(args);(void)(narg);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(void);
     M mp = *(M*)method_pptr;
     (instance->*mp)();
@@ -62,7 +62,7 @@ struct ClassBinder<R (C::*)(void)> {
   static const int NPARAM = 0;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(mrb);(void)(args);(void)(narg);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(void);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)();
@@ -115,7 +115,7 @@ struct ClassBinder<void (C::*)(P0)> {
   static const int NPARAM = 1;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0));
@@ -129,7 +129,7 @@ struct ClassBinder<R (C::*)(P0)> {
   static const int NPARAM = 1;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0));
@@ -182,7 +182,7 @@ struct ClassBinder<void (C::*)(P0, P1)> {
   static const int NPARAM = 2;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1));
@@ -196,7 +196,7 @@ struct ClassBinder<R (C::*)(P0, P1)> {
   static const int NPARAM = 2;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1));
@@ -249,7 +249,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2)> {
   static const int NPARAM = 3;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2));
@@ -263,7 +263,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2)> {
   static const int NPARAM = 3;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2));
@@ -316,7 +316,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3)> {
   static const int NPARAM = 4;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3));
@@ -330,7 +330,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3)> {
   static const int NPARAM = 4;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3));
@@ -383,7 +383,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4)> {
   static const int NPARAM = 5;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3, P4);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
@@ -397,7 +397,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4)> {
   static const int NPARAM = 5;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3, P4);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
@@ -450,7 +450,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5)> {
   static const int NPARAM = 6;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3, P4, P5);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
@@ -464,7 +464,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5)> {
   static const int NPARAM = 6;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3, P4, P5);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
@@ -517,7 +517,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6)> {
   static const int NPARAM = 7;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
@@ -531,7 +531,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6)> {
   static const int NPARAM = 7;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
@@ -584,7 +584,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
   static const int NPARAM = 8;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6); (void)(narg); CHECK(7);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
@@ -598,7 +598,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
   static const int NPARAM = 8;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6); (void)(narg); CHECK(7);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
@@ -651,7 +651,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
   static const int NPARAM = 9;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6); (void)(narg); CHECK(7); (void)(narg); CHECK(8);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
@@ -665,7 +665,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
   static const int NPARAM = 9;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6); (void)(narg); CHECK(7); (void)(narg); CHECK(8);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
@@ -718,7 +718,7 @@ struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
   static const int NPARAM = 10;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6); (void)(narg); CHECK(7); (void)(narg); CHECK(8); (void)(narg); CHECK(9);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
     M mp = *(M*)method_pptr;
     (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
@@ -732,7 +732,7 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
   static const int NPARAM = 10;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     (void)(narg); CHECK(0); (void)(narg); CHECK(1); (void)(narg); CHECK(2); (void)(narg); CHECK(3); (void)(narg); CHECK(4); (void)(narg); CHECK(5); (void)(narg); CHECK(6); (void)(narg); CHECK(7); (void)(narg); CHECK(8); (void)(narg); CHECK(9);
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));

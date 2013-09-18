@@ -58,7 +58,7 @@ struct ClassBinder<void (C::*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     %ASSERTS%
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef void (C::*M)(%PARAMS%);
     M mp = *(M*)method_pptr;
     (instance->*mp)(%ARGS%);
@@ -72,7 +72,7 @@ struct ClassBinder<R (C::*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
   static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
     %ASSERTS%
-    C* instance = static_cast<C*>(mrb_data_get_ptr(mrb, self, &ClassBinder<C>::type_info));
+    C* instance = static_cast<C*>(DATA_PTR(self));
     typedef R (C::*M)(%PARAMS%);
     M mp = *(M*)method_pptr;
     R result = (instance->*mp)(%ARGS%);
