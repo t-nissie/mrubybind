@@ -1,8 +1,8 @@
 #ifndef __MRUBYBIND_TYPES_H__
 #define __MRUBYBIND_TYPES_H__
 
-#include <mruby.h>
-#include <mruby/string.h>
+#include "mruby.h"
+#include "mruby/string.h"
 #include <string>
 
 #include <assert.h>

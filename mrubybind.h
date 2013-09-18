@@ -1,9 +1,9 @@
 #ifndef __MRUBYBIND_H__
 #define __MRUBYBIND_H__
 
-#include <mruby.h>
-#include <mruby/class.h>
-#include <mruby/data.h>
+#include "mruby.h"
+#include "mruby/class.h"
+#include "mruby/data.h"
 #include "mrubybind_types.h"
 
 namespace mrubybind {
@@ -41,8 +41,8 @@ public:
     mrb_value class_name_v = mrb_str_new_cstr(mrb_, class_name);
     mrb_value new_func_ptr_v = mrb_voidp_value(mrb_, (void*)new_func_ptr);
     mrb_value nparam_v = mrb_fixnum_value(ClassBinder<Func>::NPARAM);
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_class", 4, binder, class_name_v,
-                new_func_ptr_v, nparam_v);
+    mrb_funcall(mrb_, mod_mrubybind_, "bind_class", 5, binder, mrb_obj_value(mod_),
+                class_name_v, new_func_ptr_v, nparam_v);
   }
 
   // Bind class method.
@@ -56,8 +56,8 @@ public:
                                           reinterpret_cast<char*>(&method_ptr),
                                           sizeof(method_ptr));
     mrb_value nparam_v = mrb_fixnum_value(ClassBinder<Method>::NPARAM);
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_class_method", 5, binder,
-                class_name_v, method_name_v, method_pptr_v, nparam_v);
+    mrb_funcall(mrb_, mod_mrubybind_, "bind_class_method", 6, binder,
+                mrb_obj_value(mod_), class_name_v, method_name_v, method_pptr_v, nparam_v);
   }
 
 private:

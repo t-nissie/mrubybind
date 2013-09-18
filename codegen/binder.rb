@@ -11,8 +11,8 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.bind_class(binder, class_name, new_func_ptr, nparam)
-    Kernel.const_get(class_name).class_eval do
+  def MrubyBind.bind_class(binder, mod, class_name, new_func_ptr, nparam)
+    mod.const_get(class_name).class_eval do
       define_method(:initialize) do |*args|
         if args.size != nparam
           raise ArgumentError.new("`initialize': wrong number of arguments (#{args.size} for #{nparam})")
@@ -22,8 +22,8 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.bind_class_method(binder, class_name, method_name, method_ptr, nparam)
-    Kernel.const_get(class_name).class_eval do
+  def MrubyBind.bind_class_method(binder, mod, class_name, method_name, method_ptr, nparam)
+    mod.const_get(class_name).class_eval do
       define_method(method_name) do |*args|
         if args.size != nparam
           raise ArgumentError.new("`#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
