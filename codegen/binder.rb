@@ -22,13 +22,26 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.bind_class_method(binder, mod, class_name, method_name, method_ptr, nparam)
+  def MrubyBind.bind_instance_method(binder, mod, class_name, method_name, method_ptr, nparam)
     mod.const_get(class_name).class_eval do
       define_method(method_name) do |*args|
         if args.size != nparam
           raise ArgumentError.new("`#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
         end
-        MrubyBind::call_cmethod(binder, self, method_ptr, *args)
+        MrubyBind::call_imethod(binder, self, method_ptr, *args)
+      end
+    end
+  end
+
+  def MrubyBind.bind_static_method(binder, mod, class_name, method_name, method_ptr, nparam)
+    mod.const_get(class_name).class_eval do
+      self.class.instance_eval do
+        define_method(method_name) do |*args|
+          if args.size != nparam
+            raise ArgumentError.new("`#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
+          end
+          MrubyBind::call_cfunc(binder, method_ptr, *args)
+        end
       end
     end
   end

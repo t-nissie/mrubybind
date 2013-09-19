@@ -47,6 +47,9 @@ public:
   int bar(int y) {
     return x_ + y;
   }
+  static int baz(int z) {
+    return z * z;
+  }
 
 private:
   int x_;
@@ -60,7 +63,8 @@ void BindClassTest(mrb_state* mrb) {
   {
     mrubybind::MrubyBind b(mrb);
     b.bind_class("Foo", new_foo);
-    b.bind_class_method("Foo", "bar", &Foo::bar);
+    b.bind_instance_method("Foo", "bar", &Foo::bar);
+    b.bind_static_method("Foo", "baz", &Foo::baz);
   }
 
   mrb_load_string(mrb,
@@ -68,6 +72,7 @@ void BindClassTest(mrb_state* mrb) {
                   "p foo\n"
                   "p foo.bar(567)\n"
                   "foo = nil\n"
+                  "p Foo.baz(9999)"
                   );
 
   if (mrb->exc) {
