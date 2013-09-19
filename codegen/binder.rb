@@ -11,7 +11,7 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.bind_class(binder, mod, class_name, new_func_ptr, nparam)
+  def MrubyBind.bind_class(mod, binder, class_name, new_func_ptr, nparam)
     mod.const_get(class_name).class_eval do
       define_method(:initialize) do |*args|
         if args.size != nparam
@@ -22,7 +22,7 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.bind_instance_method(binder, mod, class_name, method_name, method_ptr, nparam)
+  def MrubyBind.bind_instance_method(mod, binder, class_name, method_name, method_ptr, nparam)
     mod.const_get(class_name).class_eval do
       define_method(method_name) do |*args|
         if args.size != nparam
@@ -33,7 +33,7 @@ module MrubyBind
     end
   end
 
-  def MrubyBind.bind_static_method(binder, mod, class_name, method_name, method_ptr, nparam)
+  def MrubyBind.bind_static_method(mod, binder, class_name, method_name, method_ptr, nparam)
     mod.const_get(class_name).class_eval do
       self.class.instance_eval do
         define_method(method_name) do |*args|
