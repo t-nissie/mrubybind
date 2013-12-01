@@ -92,7 +92,7 @@ MrubyBind::~MrubyBind() {
 
 void MrubyBind::Initialize() {
   arena_index_ = mrb_gc_arena_save(mrb_);
-  mrb_sym sym_mrubybind = mrb_intern(mrb_, "MrubyBind");
+  mrb_sym sym_mrubybind = mrb_intern_cstr(mrb_, "MrubyBind");
   if (mrb_const_defined(mrb_, mrb_obj_value(mrb_->kernel_module),
                         sym_mrubybind)) {
     mod_mrubybind_ = mrb_const_get(mrb_, mrb_obj_value(mrb_->kernel_module),
@@ -108,9 +108,9 @@ void MrubyBind::Initialize() {
                                ARGS_REQ(3) | ARGS_REST());
     mrb_define_module_function(mrb_, mrubybind, "call_smethod", call_smethod,
                                ARGS_REQ(2) | ARGS_REST());
-    int n = mrb_read_irep(mrb_, binder);
-    if (n >= 0) {
-      mrb_run(mrb_, mrb_proc_new(mrb_, mrb_->irep[n]), mrb_top_self(mrb_));
+    mrb_irep* irep = mrb_read_irep(mrb_, binder);
+    if (irep != NULL) {
+      mrb_run(mrb_, mrb_proc_new(mrb_, irep), mrb_top_self(mrb_));
     }
   }
 }
