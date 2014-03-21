@@ -1,0 +1,4 @@
+
+}  // namespace mrubybind
+
+#undef ASSERT

@@ -9,10 +9,7 @@ mrubybind automatically creates C function/class-method binder for mruby.
 
 1. Put following source codes into your project.
   * mrubybind.cc
-  * mrubybind.dat
   * mrubybind.h
-  * mrubybind.inc
-  * mrubybind_types.h
 2. Include "mrubybind.h"
 3. Use `MrubyBind` instance to bind C function/class-method to mruby.
 

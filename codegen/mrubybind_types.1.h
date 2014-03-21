@@ -1,7 +1,3 @@
-#ifndef __MRUBYBIND_TYPES_H__
-#define __MRUBYBIND_TYPES_H__
-
-#include "mruby.h"
 #include "mruby/string.h"
 #include <string>
 
@@ -137,10 +133,4 @@ mrb_value raise(mrb_state *mrb, int parameter_index,
                 const char* required_type_name, mrb_value value);
 
 // Includes generated template specialization.
-#include "mrubybind.inc"
-
-}  // namespace mrubybind
-
-#undef ASSERT
-
-#endif
+//#include "mrubybind.inc"

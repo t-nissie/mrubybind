@@ -2,7 +2,7 @@
 MAX_PARAM = 10
 
 HEADER = <<EOD
-// This file is generated from gen_template.rb
+// Following code is generated from gen_template.rb
 \#define ARG(i)  Type<P##i>::get(args[i])
 \#define CHECK(i)  {if(!Type<P##i>::check(args[i])) return RAISE(i);}
 \#define RAISE(i)  raise(mrb, i, Type<P##i>::TYPE_NAME, args[i])
