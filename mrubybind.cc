@@ -24,10 +24,10 @@ const char Type<void*>::TYPE_NAME[] = "Voidp";
 mrb_value raise(mrb_state *mrb, int parameter_index,
                 const char* required_type_name, mrb_value value) {
   const char * argument_class_name = mrb_obj_classname(mrb, value);
-  mrb_raisef(mrb, E_TYPE_ERROR, "Illegal type %S, %S required, but %S(%S)",
-             mrb_fixnum_value(parameter_index),
+  mrb_raisef(mrb, E_TYPE_ERROR, "can't convert %S into %S, argument %S(%S)",
+             mrb_str_new_cstr(mrb, argument_class_name),
              mrb_str_new_cstr(mrb, required_type_name),
-             mrb_str_new_cstr(mrb, argument_class_name), value);
+             mrb_fixnum_value(parameter_index + 1), value);
   return mrb_nil_value();
 }
 
