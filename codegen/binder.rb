@@ -5,7 +5,7 @@ module MrubyBind
   def MrubyBind.define_function(mod, binder, func_name, func_ptr, nparam)
     Kernel.send(:define_method, func_name) do |*args|
       if args.size != nparam
-        raise ArgumentError.new("`#{func_name}': wrong number of arguments (#{args.size} for #{nparam})")
+        raise ArgumentError.new("'#{func_name}': wrong number of arguments (#{args.size} for #{nparam})")
       end
       MrubyBind::call_cfunc(binder, func_ptr, *args)
     end
@@ -15,7 +15,7 @@ module MrubyBind
     mod.const_get(class_name).class_eval do
       define_method(:initialize) do |*args|
         if args.size != nparam
-          raise ArgumentError.new("`initialize': wrong number of arguments (#{args.size} for #{nparam})")
+          raise ArgumentError.new("'initialize': wrong number of arguments (#{args.size} for #{nparam})")
         end
         MrubyBind::call_ctorfunc(binder, self, new_func_ptr, *args)
       end
@@ -26,7 +26,7 @@ module MrubyBind
     mod.const_get(class_name).class_eval do
       define_method(method_name) do |*args|
         if args.size != nparam
-          raise ArgumentError.new("`#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
+          raise ArgumentError.new("'#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
         end
         MrubyBind::call_imethod(binder, self, method_ptr, *args)
       end
@@ -38,7 +38,7 @@ module MrubyBind
       self.class.instance_eval do
         define_method(method_name) do |*args|
           if args.size != nparam
-            raise ArgumentError.new("`#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
+            raise ArgumentError.new("'#{method_name}': wrong number of arguments (#{args.size} for #{nparam})")
           end
           MrubyBind::call_cfunc(binder, method_ptr, *args)
         end
