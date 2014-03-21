@@ -37,4 +37,10 @@ class:	class.o $(MRUBYBIND_OBJ)
 module:	module.o $(MRUBYBIND_OBJ)
 	g++ -o $@ $^ $(LIB)
 
+wrong_type:	wrong_type.o $(MRUBYBIND_OBJ)
+	g++ -o $@ $^ $(LIB)
+
+wrong_arg_num:	wrong_arg_num.o $(MRUBYBIND_OBJ)
+	g++ -o $@ $^ $(LIB)
+
 #
