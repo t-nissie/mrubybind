@@ -1,0 +1,7 @@
+*.o
+
+/test/int
+/test/float
+/test/string
+/test/class
+/test/module
