@@ -18,9 +18,11 @@ int main() {
     b.bind_const("FOO_VALUE", 1234);
   }
 
+  int result_code = EXIT_SUCCESS;
   mrb_load_string(mrb, "Mod.modfunc(Mod::FOO_VALUE)");
   if (mrb->exc) {
     mrb_p(mrb, mrb_obj_value(mrb->exc));
+    result_code = EXIT_FAILURE;
   }
 
   mrb_close(mrb);

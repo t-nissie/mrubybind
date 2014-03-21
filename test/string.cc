@@ -17,9 +17,11 @@ int main() {
     b.bind("emphasize", emphasize);
   }
 
+  int result_code = EXIT_SUCCESS;
   mrb_load_string(mrb, "puts emphasize('Hello, mruby!')");
   if (mrb->exc) {
     mrb_p(mrb, mrb_obj_value(mrb->exc));
+    result_code = EXIT_FAILURE;
   }
 
   mrb_close(mrb);

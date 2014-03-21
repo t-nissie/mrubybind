@@ -14,9 +14,11 @@ int main() {
     b.bind("square", square);
   }
 
+  int result_code = EXIT_SUCCESS;
   mrb_load_string(mrb, "puts square(1111)");
   if (mrb->exc) {
     mrb_p(mrb, mrb_obj_value(mrb->exc));
+    result_code = EXIT_FAILURE;
   }
 
   mrb_close(mrb);

@@ -40,6 +40,7 @@ int main() {
     b.bind_static_method("Foo", "baz", &Foo::baz);
   }
 
+  int result_code = EXIT_SUCCESS;
   mrb_load_string(mrb,
                   "foo = Foo.new(123)\n"
                   "p foo.bar(567)\n"
@@ -48,6 +49,7 @@ int main() {
 
   if (mrb->exc) {
     mrb_p(mrb, mrb_obj_value(mrb->exc));
+    result_code = EXIT_FAILURE;
   }
 
   mrb_close(mrb);
