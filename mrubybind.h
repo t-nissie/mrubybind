@@ -22,6 +22,10 @@
 #ifndef __MRUBYBIND_H__
 #define __MRUBYBIND_H__
 
+#ifndef __cplusplus
+#error mrubybind can be used from C++ only.
+#endif
+
 #include "mruby.h"
 #include "mruby/class.h"
 #include "mruby/data.h"
