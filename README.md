@@ -1,7 +1,7 @@
 mrubybind - Binding library for mruby/C++
 =========================================
 
-mrubybind automatically creates C function/class-method binder for mruby,
+mrubybind automatically creates C function/class-method binder for [mruby](https://github.com/mruby/mruby),
 using C++ template partial specialization.
 
 ## Usage
