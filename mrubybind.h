@@ -1,4 +1,24 @@
 // Do not modify this file directly, this is generated
+/**
+ * mrubybind - Binding library for mruby/C++
+ *
+ * Usage:
+ *   1. Prepare a function which you want to call from mruby:
+ *     > int square(int x)  { return x * x; }
+ *
+ *   2. Create MrubyBind instance:
+ *     > MrubyBind b(mirb)
+ *
+ *   3. Bind a function:
+ *     > b.bind("square", square);
+ *
+ *   4. You can call it from mruby:
+ *     > puts square(1111)  #=> 1234321
+ *
+ *   There are other methods to bind constant/class/instance method in
+ *   MrubyBind. Please see the definition of MrubyBind
+ *   (the bottom of this file), or README.
+ */
 #ifndef __MRUBYBIND_H__
 #define __MRUBYBIND_H__
 
@@ -893,6 +913,8 @@ struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
 
 namespace mrubybind {
 
+//===========================================================================
+// MrubyBind - utility class for binding C functions/classes to mruby.
 class MrubyBind {
 public:
   MrubyBind(mrb_state* mrb);

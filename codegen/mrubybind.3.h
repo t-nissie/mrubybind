@@ -1,6 +1,8 @@
 
 namespace mrubybind {
 
+//===========================================================================
+// MrubyBind - utility class for binding C functions/classes to mruby.
 class MrubyBind {
 public:
   MrubyBind(mrb_state* mrb);
