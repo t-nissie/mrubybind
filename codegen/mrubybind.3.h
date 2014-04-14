@@ -26,6 +26,21 @@ public:
     mrb_funcall(mrb_, mod_mrubybind_, "define_function", 5, mod, binder, func_name_v,
                 func_ptr_v, nparam_v);
   }
+  template <class Func>
+  void bind2(const char* func_name, Func func_ptr) {
+    //mrb_value mod = mrb_obj_value(mod_);
+    //mrb_value binder = mrb_voidp_value(mrb_, (void*)Binder<Func>::call2);
+    //mrb_value func_name_v = mrb_str_new_cstr(mrb_, func_name);
+    //mrb_value func_ptr_v = mrb_voidp_value(mrb_, reinterpret_cast<void*>(func_ptr));
+    //mrb_value nparam_v = mrb_fixnum_value(Binder<Func>::NPARAM);
+    //mrb_funcall(mrb_, mod_mrubybind_, "define_function", 5, mod, binder, func_name_v,
+    //            func_ptr_v, nparam_v);
+
+    mrb_sym func_name_v = mrb_intern_cstr(mrb_, func_name);
+    mrb_value voidp = mrb_cptr_value(mrb_, (void*)func_ptr);
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call2, 1, &voidp);
+    mrb_define_method_raw(mrb_, mod_, func_name_v, proc);
+  }
 
   // Bind class.
   template <class Func>

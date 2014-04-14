@@ -20,6 +20,16 @@ struct Binder<void (*)(%PARAMS%)> {
     fp(%ARGS%);
     return mrb_nil_value();
   }
+  static mrb_value call2(mrb_state* mrb, mrb_value /*self*/) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
+    %ASSERTS%
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    void (*fp)(%PARAMS%) = (void (*)(%PARAMS%))mrb_voidp(cfunc);
+    fp(%ARGS%);
+    return mrb_nil_value();
+  }
 };
 
 // R f(%PARAMS%);
@@ -29,6 +39,16 @@ struct Binder<R (*)(%PARAMS%)> {
   static mrb_value call(mrb_state* mrb, void* func_ptr, mrb_value* args, int narg) {
     %ASSERTS%
     R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))func_ptr;
+    R result = fp(%ARGS%);
+    return Type<R>::ret(mrb, result);
+  }
+  static mrb_value call2(mrb_state* mrb, mrb_value /*self*/) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
+    %ASSERTS%
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))mrb_voidp(cfunc);
     R result = fp(%ARGS%);
     return Type<R>::ret(mrb, result);
   }
