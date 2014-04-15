@@ -66,16 +66,16 @@ public:
   template <class Method>
   void bind_instance_method(const char* class_name, const char* method_name,
                             Method method_ptr) {
-    mrb_value mod = mrb_obj_value(mod_);
-    mrb_value binder = mrb_voidp_value(mrb_, (void*)ClassBinder<Method>::call);
-    mrb_value class_name_v = mrb_str_new_cstr(mrb_, class_name);
-    mrb_value method_name_v = mrb_str_new_cstr(mrb_, method_name);
+    mrb_sym method_name_s = mrb_intern_cstr(mrb_, method_name);
     mrb_value method_pptr_v = mrb_str_new(mrb_,
                                           reinterpret_cast<char*>(&method_ptr),
                                           sizeof(method_ptr));
-    mrb_value nparam_v = mrb_fixnum_value(ClassBinder<Method>::NPARAM);
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_instance_method", 6,
-                mod, binder, class_name_v, method_name_v, method_pptr_v, nparam_v);
+    mrb_value env[] = {
+      method_pptr_v,                    // 0: instance method pointer
+      mrb_symbol_value(method_name_s),  // 1: method name
+    };
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, ClassBinder<Method>::call, 2, env);
+    mrb_define_method_raw(mrb_, mod_, method_name_s, proc);
   }
 
   // Bind static method.
