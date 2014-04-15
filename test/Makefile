@@ -8,6 +8,8 @@ MRUBYBIND_OBJ=mrubybind.o
 SRCS=$(wildcard *.cc)
 EXES=$(SRCS:%.cc=%)
 
+CXXFLAGS=-Wall -Wextra -Werror
+
 all:	$(EXES)
 
 clean:
@@ -17,10 +19,10 @@ test:	$(EXES)
 	./test.sh
 
 %.o:	%.cc
-	g++ -c -o $@ $(INC) $<
+	g++ -c -o $@ $(INC) $(CXXFLAGS) $<
 
 mrubybind.o:	$(MRUBYBIND_SRCDIR)/mrubybind.cc
-	g++ -c -o $@ $(INC) $<
+	g++ -c -o $@ $(INC) $(CXXFLAGS) $<
 
 int:	int.o $(MRUBYBIND_OBJ)
 	g++ -o $@ $^ $(LIB)
