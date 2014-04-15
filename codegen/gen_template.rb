@@ -61,11 +61,15 @@ struct Binder<R (*)(%PARAMS%)> {
 template<class C%CLASSES1%>
 struct ClassBinder<C* (*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self, void* new_func_ptr, mrb_value* args, int narg) {
+  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
     DATA_TYPE(self) = &ClassBinder<C>::type_info;
     DATA_PTR(self) = NULL;
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
-    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))new_func_ptr;
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))mrb_voidp(cfunc);
     C* instance = ctor(%ARGS%);
     DATA_PTR(self) = instance;
     return self;

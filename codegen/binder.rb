@@ -2,17 +2,6 @@
 # and included into C code.
 
 module MrubyBind
-  def MrubyBind.bind_class(mod, binder, class_name, new_func_ptr, nparam)
-    mod.const_get(class_name).class_eval do
-      define_method(:initialize) do |*args|
-        if args.size != nparam
-          raise ArgumentError.new("'initialize': wrong number of arguments (#{args.size} for #{nparam})")
-        end
-        MrubyBind::call_ctorfunc(binder, self, new_func_ptr, *args)
-      end
-    end
-  end
-
   def MrubyBind.bind_static_method(mod, binder, class_name, method_name, method_ptr, nparam)
     mod.const_get(class_name).class_eval do
       self.class.instance_eval do

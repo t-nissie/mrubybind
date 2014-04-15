@@ -39,19 +39,6 @@ static mrb_value call_cfunc(mrb_state *mrb, mrb_value /*self*/) {
   return binderp(mrb, mrb_voidp(func_ptr_v), args, narg);
 }
 
-static mrb_value call_ctorfunc(mrb_state *mrb, mrb_value self) {
-  mrb_value binder;
-  mrb_value self_v;
-  mrb_value new_func_ptr_v;
-  mrb_value* args;
-  int narg;
-  mrb_get_args(mrb, "ooo*", &binder, &self_v, &new_func_ptr_v, &args, &narg);
-  typedef mrb_value (*BindFunc)(mrb_state*, mrb_value, void*, mrb_value*, int);
-  BindFunc binderp = reinterpret_cast<BindFunc>(mrb_voidp(binder));
-  binderp(mrb, self_v, mrb_voidp(new_func_ptr_v), args, narg);
-  return self;
-}
-
 MrubyBind::MrubyBind(mrb_state* mrb) : mrb_(mrb), mod_(mrb_->kernel_module) {
   Initialize();
 }
@@ -76,8 +63,6 @@ void MrubyBind::Initialize() {
     mod_mrubybind_ = mrb_obj_value(mrubybind);
     mrb_define_module_function(mrb_, mrubybind, "call_cfunc", call_cfunc,
                                ARGS_REQ(2) | ARGS_REST());
-    mrb_define_module_function(mrb_, mrubybind, "call_ctorfunc", call_ctorfunc,
-                               ARGS_REQ(3) | ARGS_REST());
     mrb_irep* irep = mrb_read_irep(mrb_, binder);
     if (irep != NULL) {
       mrb_run(mrb_, mrb_proc_new(mrb_, irep), mrb_top_self(mrb_));

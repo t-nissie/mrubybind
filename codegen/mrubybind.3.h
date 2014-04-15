@@ -45,13 +45,16 @@ public:
   void bind_class(const char* class_name, Func new_func_ptr) {
     struct RClass *tc = mrb_define_class(mrb_, class_name, mrb_->object_class);
     MRB_SET_INSTANCE_TT(tc, MRB_TT_DATA);
+    mrb_sym method_name_s = mrb_intern_cstr(mrb_, "initialize");
+    mrb_value env[] = {
+      mrb_cptr_value(mrb_, (void*)new_func_ptr),  // 0: c function pointer
+      mrb_symbol_value(method_name_s),            // 1: method name
+    };
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, ClassBinder<Func>::ctor, 2, env);
     mrb_value mod = mrb_obj_value(mod_);
-    mrb_value binder = mrb_voidp_value(mrb_, (void*)ClassBinder<Func>::ctor);
-    mrb_value class_name_v = mrb_str_new_cstr(mrb_, class_name);
-    mrb_value new_func_ptr_v = mrb_voidp_value(mrb_, (void*)new_func_ptr);
-    mrb_value nparam_v = mrb_fixnum_value(ClassBinder<Func>::NPARAM);
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_class", 5, mod, binder,
-                class_name_v, new_func_ptr_v, nparam_v);
+    mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
+    struct RClass* klass = mrb_class_ptr(klass_v);
+    mrb_define_method_raw(mrb_, klass, method_name_s, proc);
   }
 
   // Bind instance method.
