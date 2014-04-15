@@ -3,11 +3,21 @@
 
 module MrubyBind
   def MrubyBind.define_function(mod, binder, func_name, func_ptr, nparam)
-    Kernel.send(:define_method, func_name) do |*args|
-      if args.size != nparam
-        raise ArgumentError.new("'#{func_name}': wrong number of arguments (#{args.size} for #{nparam})")
+    if mod == Kernel
+      # Not sure why defining class method for Kernel is not work with code below...
+      Kernel.send(:define_method, func_name) do |*args|
+        if args.size != nparam
+          raise ArgumentError.new("'#{func_name}': wrong number of arguments (#{args.size} for #{nparam})")
+        end
+        MrubyBind::call_cfunc(binder, func_ptr, *args)
       end
-      MrubyBind::call_cfunc(binder, func_ptr, *args)
+    else
+      mod.define_singleton_method(func_name) do |*args|
+        if args.size != nparam
+          raise ArgumentError.new("'#{func_name}': wrong number of arguments (#{args.size} for #{nparam})")
+        end
+        MrubyBind::call_cfunc(binder, func_ptr, *args)
+      end
     end
   end
 
