@@ -131,6 +131,7 @@ mrb_data_type ClassBinder<C>::type_info = { "???", dtor };
 
 mrb_value raise(mrb_state *mrb, int parameter_index,
                 const char* required_type_name, mrb_value value);
+mrb_value raise2(mrb_state *mrb, mrb_value func_name, int narg, int nparam);
 
 // Includes generated template specialization.
 //#include "mrubybind.inc"

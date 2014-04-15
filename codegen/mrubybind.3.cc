@@ -20,6 +20,14 @@ mrb_value raise(mrb_state *mrb, int parameter_index,
   return mrb_nil_value();
 }
 
+mrb_value raise2(mrb_state *mrb, mrb_value func_name, int narg, int nparam) {
+  mrb_raisef(mrb, E_ARGUMENT_ERROR, "'%S': wrong number of arguments (%S for %S)",
+             func_name,
+             mrb_fixnum_value(narg),
+             mrb_fixnum_value(nparam));
+  return mrb_nil_value();
+}
+
 static mrb_value call_cfunc(mrb_state *mrb, mrb_value /*self*/) {
   mrb_value binder;
   mrb_value func_ptr_v;

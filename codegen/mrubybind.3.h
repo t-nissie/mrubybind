@@ -18,6 +18,7 @@ public:
   // Bind function.
   template <class Func>
   void bind(const char* func_name, Func func_ptr) {
+    /*
     mrb_value mod = mrb_obj_value(mod_);
     mrb_value binder = mrb_voidp_value(mrb_, (void*)Binder<Func>::call);
     mrb_value func_name_v = mrb_str_new_cstr(mrb_, func_name);
@@ -25,6 +26,8 @@ public:
     mrb_value nparam_v = mrb_fixnum_value(Binder<Func>::NPARAM);
     mrb_funcall(mrb_, mod_mrubybind_, "define_function", 5, mod, binder, func_name_v,
                 func_ptr_v, nparam_v);
+    */
+    bind2(func_name, func_ptr);
   }
   template <class Func>
   void bind2(const char* func_name, Func func_ptr) {
@@ -36,10 +39,13 @@ public:
     //mrb_funcall(mrb_, mod_mrubybind_, "define_function", 5, mod, binder, func_name_v,
     //            func_ptr_v, nparam_v);
 
-    mrb_sym func_name_v = mrb_intern_cstr(mrb_, func_name);
-    mrb_value voidp = mrb_cptr_value(mrb_, (void*)func_ptr);
-    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call2, 1, &voidp);
-    mrb_define_method_raw(mrb_, mod_, func_name_v, proc);
+    mrb_sym func_name_s = mrb_intern_cstr(mrb_, func_name);
+    mrb_value env[] = {
+      mrb_cptr_value(mrb_, (void*)func_ptr),  // 0: c function pointer
+      mrb_symbol_value(func_name_s),          // 1: function name
+    };
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call2, 2, env);
+    mrb_define_method_raw(mrb_, mod_, func_name_s, proc);
   }
 
   // Bind class.

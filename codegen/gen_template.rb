@@ -7,6 +7,9 @@ HEADER = <<EOD
 \#define CHECK(i)  {if(!Type<P##i>::check(args[i])) return RAISE(i);}
 \#define RAISE(i)  raise(mrb, i, Type<P##i>::TYPE_NAME, args[i])
 
+\#define CHECK2(narg)  {if(narg != NPARAM) RAISE2(narg);}
+\#define RAISE2(narg)  raise2(mrb, mrb_cfunc_env_get(mrb, 1), narg, NPARAM)
+
 EOD
 
 FUNC_TMPL = <<EOD
@@ -126,7 +129,7 @@ def embed_template(str, nparam)
     '%ARGS%' => args,
     '%CLASSES0%' => classes,
     '%CLASSES1%' => classes.empty? ? '' : ', ' + classes,
-    '%ASSERTS%' => asserts
+    '%ASSERTS%' => 'CHECK2(narg); ' + asserts
   }
 
   return str.gsub(/(#{table.keys.join('|')})/) {|k| table[k]}
