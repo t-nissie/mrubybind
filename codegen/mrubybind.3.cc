@@ -39,6 +39,15 @@ static mrb_value call_cfunc(mrb_state *mrb, mrb_value /*self*/) {
   return binderp(mrb, mrb_voidp(func_ptr_v), args, narg);
 }
 
+
+void
+mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p)
+{
+  mrb_define_class_method(mrb, c, mrb_sym2name(mrb, mid), NULL, MRB_ARGS_ANY());  // Dummy registration.
+  mrb_define_method_raw(mrb, ((RObject*)c)->c, mid, p);
+}
+
+
 MrubyBind::MrubyBind(mrb_state* mrb) : mrb_(mrb), mod_(mrb_->kernel_module) {
   Initialize();
 }

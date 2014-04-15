@@ -66,13 +66,15 @@ public:
   void bind_static_method(const char* class_name, const char* method_name,
                           Method method_ptr) {
     mrb_value mod = mrb_obj_value(mod_);
-    mrb_value binder = mrb_voidp_value(mrb_, (void*)Binder<Method>::call);
-    mrb_value class_name_v = mrb_str_new_cstr(mrb_, class_name);
-    mrb_value method_name_v = mrb_str_new_cstr(mrb_, method_name);
-    mrb_value func_ptr_v = mrb_voidp_value(mrb_, reinterpret_cast<void*>(method_ptr));
-    mrb_value nparam_v = mrb_fixnum_value(Binder<Method>::NPARAM);
-    mrb_funcall(mrb_, mod_mrubybind_, "bind_static_method", 6,
-                mod, binder, class_name_v, method_name_v, func_ptr_v, nparam_v);
+    mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
+    struct RClass* klass = mrb_class_ptr(klass_v);
+    mrb_sym method_name_s = mrb_intern_cstr(mrb_, method_name);
+    mrb_value env[] = {
+      mrb_cptr_value(mrb_, (void*)method_ptr),  // 0: method pointer
+      mrb_symbol_value(method_name_s),          // 1: method name
+    };
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Method>::call2, 2, env);
+    mrb_define_class_method_raw(mrb_, klass, method_name_s, proc);
   }
 
 private:
