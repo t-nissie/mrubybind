@@ -18,25 +18,12 @@ public:
   // Bind function.
   template <class Func>
   void bind(const char* func_name, Func func_ptr) {
-    /*
-    mrb_value mod = mrb_obj_value(mod_);
-    mrb_value binder = mrb_voidp_value(mrb_, (void*)Binder<Func>::call);
-    mrb_value func_name_v = mrb_str_new_cstr(mrb_, func_name);
-    mrb_value func_ptr_v = mrb_voidp_value(mrb_, reinterpret_cast<void*>(func_ptr));
-    mrb_value nparam_v = mrb_fixnum_value(Binder<Func>::NPARAM);
-    mrb_funcall(mrb_, mod_mrubybind_, "define_function", 5, mod, binder, func_name_v,
-                func_ptr_v, nparam_v);
-    */
-    bind2(func_name, func_ptr);
-  }
-  template <class Func>
-  void bind2(const char* func_name, Func func_ptr) {
     mrb_sym func_name_s = mrb_intern_cstr(mrb_, func_name);
     mrb_value env[] = {
       mrb_cptr_value(mrb_, (void*)func_ptr),  // 0: c function pointer
       mrb_symbol_value(func_name_s),          // 1: function name
     };
-    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call2, 2, env);
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call, 2, env);
     mrb_define_method_raw(mrb_, mod_, func_name_s, proc);
   }
 
@@ -65,25 +52,31 @@ public:
   template <class Method>
   void bind_static_method(const char* class_name, const char* method_name,
                           Method method_ptr) {
-    mrb_value mod = mrb_obj_value(mod_);
-    mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
-    struct RClass* klass = mrb_class_ptr(klass_v);
     mrb_sym method_name_s = mrb_intern_cstr(mrb_, method_name);
     mrb_value env[] = {
       mrb_cptr_value(mrb_, (void*)method_ptr),  // 0: method pointer
       mrb_symbol_value(method_name_s),          // 1: method name
     };
-    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Method>::call2, 2, env);
+    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Method>::call, 2, env);
+    struct RClass* klass = GetClass(class_name);
     mrb_define_class_method_raw(mrb_, klass, method_name_s, proc);
   }
 
 private:
   void Initialize();
 
+  // Returns mruby class under a module.
+  struct RClass* GetClass(const char* class_name);
+
   // Utility for binding instance method.
   void BindInstanceMethod(const char* class_name, const char* method_name,
                           mrb_value original_func_v,
                           mrb_value (*binder_func)(mrb_state*, mrb_value));
+
+  // Mimic mruby API.
+  // TODO: Send pull request to the official mruby repository.
+  void
+  mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p);
 
   mrb_state* mrb_;
   mrb_value mod_mrubybind_;

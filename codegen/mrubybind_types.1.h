@@ -133,8 +133,5 @@ mrb_value raise(mrb_state *mrb, int parameter_index,
                 const char* required_type_name, mrb_value value);
 mrb_value raise2(mrb_state *mrb, mrb_value func_name, int narg, int nparam);
 
-void
-mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p);
-
 // Includes generated template specialization.
 //#include "mrubybind.inc"

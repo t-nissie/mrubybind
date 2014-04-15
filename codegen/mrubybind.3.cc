@@ -41,7 +41,7 @@ static mrb_value call_cfunc(mrb_state *mrb, mrb_value /*self*/) {
 
 
 void
-mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p)
+MrubyBind::mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p)
 {
   mrb_define_class_method(mrb, c, mrb_sym2name(mrb, mid), NULL, MRB_ARGS_ANY());  // Dummy registration.
   mrb_define_method_raw(mrb, ((RObject*)c)->c, mid, p);
@@ -79,6 +79,12 @@ void MrubyBind::Initialize() {
   }
 }
 
+struct RClass* MrubyBind::GetClass(const char* class_name) {
+  mrb_value mod = mrb_obj_value(mod_);
+  mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
+  return mrb_class_ptr(klass_v);
+}
+
 void MrubyBind::BindInstanceMethod(
     const char* class_name, const char* method_name,
     mrb_value original_func_v,
@@ -89,9 +95,7 @@ void MrubyBind::BindInstanceMethod(
     mrb_symbol_value(method_name_s),  // 1: method name
   };
   struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, binder_func, 2, env);
-  mrb_value mod = mrb_obj_value(mod_);
-  mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
-  struct RClass* klass = mrb_class_ptr(klass_v);
+  struct RClass* klass = GetClass(class_name);
   mrb_define_method_raw(mrb_, klass, method_name_s, proc);
 }
 

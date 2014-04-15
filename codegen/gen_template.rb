@@ -17,13 +17,7 @@ FUNC_TMPL = <<EOD
 template<%CLASSES0%>
 struct Binder<void (*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value call(mrb_state* mrb, void* func_ptr, mrb_value* args, int narg) {
-    %ASSERTS%
-    void (*fp)(%PARAMS%) = (void (*)(%PARAMS%))func_ptr;
-    fp(%ARGS%);
-    return mrb_nil_value();
-  }
-  static mrb_value call2(mrb_state* mrb, mrb_value /*self*/) {
+  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
@@ -39,13 +33,7 @@ struct Binder<void (*)(%PARAMS%)> {
 template<class R%CLASSES1%>
 struct Binder<R (*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value call(mrb_state* mrb, void* func_ptr, mrb_value* args, int narg) {
-    %ASSERTS%
-    R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))func_ptr;
-    R result = fp(%ARGS%);
-    return Type<R>::ret(mrb, result);
-  }
-  static mrb_value call2(mrb_state* mrb, mrb_value /*self*/) {
+  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
