@@ -1319,35 +1319,20 @@ public:
   void bind_class(const char* class_name, Func new_func_ptr) {
     struct RClass *tc = mrb_define_class(mrb_, class_name, mrb_->object_class);
     MRB_SET_INSTANCE_TT(tc, MRB_TT_DATA);
-    mrb_sym method_name_s = mrb_intern_cstr(mrb_, "initialize");
-    mrb_value env[] = {
-      mrb_cptr_value(mrb_, (void*)new_func_ptr),  // 0: c function pointer
-      mrb_symbol_value(method_name_s),            // 1: method name
-    };
-    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, ClassBinder<Func>::ctor, 2, env);
-    mrb_value mod = mrb_obj_value(mod_);
-    mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
-    struct RClass* klass = mrb_class_ptr(klass_v);
-    mrb_define_method_raw(mrb_, klass, method_name_s, proc);
+    BindInstanceMethod(class_name, "initialize",
+                       mrb_cptr_value(mrb_, (void*)new_func_ptr),
+                       ClassBinder<Func>::ctor);
   }
 
   // Bind instance method.
   template <class Method>
   void bind_instance_method(const char* class_name, const char* method_name,
                             Method method_ptr) {
-    mrb_sym method_name_s = mrb_intern_cstr(mrb_, method_name);
     mrb_value method_pptr_v = mrb_str_new(mrb_,
                                           reinterpret_cast<char*>(&method_ptr),
                                           sizeof(method_ptr));
-    mrb_value env[] = {
-      method_pptr_v,                    // 0: instance method pointer
-      mrb_symbol_value(method_name_s),  // 1: method name
-    };
-    struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, ClassBinder<Method>::call, 2, env);
-    mrb_value mod = mrb_obj_value(mod_);
-    mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
-    struct RClass* klass = mrb_class_ptr(klass_v);
-    mrb_define_method_raw(mrb_, klass, method_name_s, proc);
+    BindInstanceMethod(class_name, method_name,
+                       method_pptr_v, ClassBinder<Method>::call);
   }
 
   // Bind static method.
@@ -1366,6 +1351,11 @@ public:
 
 private:
   void Initialize();
+
+  // Utility for binding instance method.
+  void BindInstanceMethod(const char* class_name, const char* method_name,
+                          mrb_value original_func_v,
+                          mrb_value (*binder_func)(mrb_state*, mrb_value));
 
   mrb_state* mrb_;
   mrb_value mod_mrubybind_;

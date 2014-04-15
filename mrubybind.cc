@@ -124,4 +124,20 @@ void MrubyBind::Initialize() {
   }
 }
 
+void MrubyBind::BindInstanceMethod(
+    const char* class_name, const char* method_name,
+    mrb_value original_func_v,
+    mrb_value (*binder_func)(mrb_state*, mrb_value)) {
+  mrb_sym method_name_s = mrb_intern_cstr(mrb_, method_name);
+  mrb_value env[] = {
+    original_func_v,                  // 0: c function pointer
+    mrb_symbol_value(method_name_s),  // 1: method name
+  };
+  struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, binder_func, 2, env);
+  mrb_value mod = mrb_obj_value(mod_);
+  mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
+  struct RClass* klass = mrb_class_ptr(klass_v);
+  mrb_define_method_raw(mrb_, klass, method_name_s, proc);
+}
+
 }  // namespace mrubybind
