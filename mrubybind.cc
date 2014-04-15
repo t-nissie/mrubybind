@@ -42,7 +42,7 @@ mrb_value raise(mrb_state *mrb, int parameter_index,
   return mrb_nil_value();
 }
 
-mrb_value raise2(mrb_state *mrb, mrb_value func_name, int narg, int nparam) {
+mrb_value raisenarg(mrb_state *mrb, mrb_value func_name, int narg, int nparam) {
   mrb_raisef(mrb, E_ARGUMENT_ERROR, "'%S': wrong number of arguments (%S for %S)",
              func_name,
              mrb_fixnum_value(narg),

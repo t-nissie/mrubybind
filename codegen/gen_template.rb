@@ -6,9 +6,8 @@ HEADER = <<EOD
 \#define ARG(i)  Type<P##i>::get(args[i])
 \#define CHECK(i)  {if(!Type<P##i>::check(args[i])) return RAISE(i);}
 \#define RAISE(i)  raise(mrb, i, Type<P##i>::TYPE_NAME, args[i])
-
-\#define CHECK2(narg)  {if(narg != NPARAM) RAISE2(narg);}
-\#define RAISE2(narg)  raise2(mrb, mrb_cfunc_env_get(mrb, 1), narg, NPARAM)
+\#define CHECKNARG(narg)  {if(narg != NPARAM) RAISENARG(narg);}
+\#define RAISENARG(narg)  raisenarg(mrb, mrb_cfunc_env_get(mrb, 1), narg, NPARAM)
 
 EOD
 
@@ -115,12 +114,12 @@ def embed_template(str, nparam)
     params = 'void'
     args = ''
     classes = ''
-    asserts = '(void)(mrb);(void)(args);(void)(narg);'  # Surppress warning.
+    asserts = '(void)(mrb);(void)(args);'  # Surppress warning.
   else
     params = (0...nparam).map {|i| "P#{i}"}.join(', ')
     args = (0...nparam).map {|i| "ARG(#{i})"}.join(', ')
     classes = (0...nparam).map {|i| "class P#{i}"}.join(', ')
-    asserts = (0...nparam).map {|i| "(void)(narg); CHECK(#{i});"}.join(' ')
+    asserts = (0...nparam).map {|i| "CHECK(#{i});"}.join(' ')
   end
 
   table = {
@@ -129,7 +128,7 @@ def embed_template(str, nparam)
     '%ARGS%' => args,
     '%CLASSES0%' => classes,
     '%CLASSES1%' => classes.empty? ? '' : ', ' + classes,
-    '%ASSERTS%' => 'CHECK2(narg); ' + asserts
+    '%ASSERTS%' => 'CHECKNARG(narg); ' + asserts
   }
 
   return str.gsub(/(#{table.keys.join('|')})/) {|k| table[k]}
