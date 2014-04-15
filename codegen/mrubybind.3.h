@@ -67,7 +67,10 @@ public:
       mrb_symbol_value(method_name_s),  // 1: method name
     };
     struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, ClassBinder<Method>::call, 2, env);
-    mrb_define_method_raw(mrb_, mod_, method_name_s, proc);
+    mrb_value mod = mrb_obj_value(mod_);
+    mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
+    struct RClass* klass = mrb_class_ptr(klass_v);
+    mrb_define_method_raw(mrb_, klass, method_name_s, proc);
   }
 
   // Bind static method.
