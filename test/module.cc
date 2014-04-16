@@ -3,6 +3,7 @@
 #include <mruby.h>
 #include <mruby/compile.h>
 #include "mrubybind.h"
+#include <stdlib.h>
 
 void modfunc(int v) {
   printf("modfunc called: %d\n", v);

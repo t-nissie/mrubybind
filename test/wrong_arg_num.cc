@@ -1,6 +1,7 @@
 #include <mruby.h>
 #include <mruby/compile.h>
 #include "mrubybind.h"
+#include <stdlib.h>
 
 int square(int x) {
   return x * x;

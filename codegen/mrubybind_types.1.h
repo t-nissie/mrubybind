@@ -1,19 +1,27 @@
+// Describe type conversion between C type value and mruby value.
+
 #include "mruby/string.h"
 #include <string>
-
-#include <assert.h>
-#define ASSERT(expr)  assert(expr)
 
 namespace mrubybind {
 
 //===========================================================================
 // C <-> mruby type converter.
 
+// Base template class.
 template <class T>
 struct Type {
+  // Type name used for error message.
+  // static const char TYPE_NAME[];
+
+  // Returns whether the given mrb_value can be converted into type T.
   //static int check(mrb_value v) = 0;
-  //static int get(mrb_value v) = 0;
-  //static mrb_value ret(mrb_state*, int i) = 0;
+
+  // Converts mrb_value to type T value.
+  //static T get(mrb_value v) = 0;
+
+  // Converts type T value to mrb_value.
+  //static mrb_value ret(mrb_state*, T i) = 0;
 };
 
 // Fixnum
