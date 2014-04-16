@@ -28,4 +28,6 @@
 #include "mruby.h"
 #include "mruby/class.h"
 #include "mruby/data.h"
+#include "mruby/proc.h"
+#include "mruby/variable.h"
 //#include "mrubybind_types.h"

@@ -6,6 +6,8 @@ HEADER = <<EOD
 \#define ARG(i)  Type<P##i>::get(args[i])
 \#define CHECK(i)  {if(!Type<P##i>::check(args[i])) return RAISE(i);}
 \#define RAISE(i)  raise(mrb, i, Type<P##i>::TYPE_NAME, args[i])
+\#define CHECKNARG(narg)  {if(narg != NPARAM) RAISENARG(narg);}
+\#define RAISENARG(narg)  raisenarg(mrb, mrb_cfunc_env_get(mrb, 1), narg, NPARAM)
 
 EOD
 
@@ -14,9 +16,13 @@ FUNC_TMPL = <<EOD
 template<%CLASSES0%>
 struct Binder<void (*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value call(mrb_state* mrb, void* func_ptr, mrb_value* args, int narg) {
+  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
-    void (*fp)(%PARAMS%) = (void (*)(%PARAMS%))func_ptr;
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    void (*fp)(%PARAMS%) = (void (*)(%PARAMS%))mrb_voidp(cfunc);
     fp(%ARGS%);
     return mrb_nil_value();
   }
@@ -26,9 +32,13 @@ struct Binder<void (*)(%PARAMS%)> {
 template<class R%CLASSES1%>
 struct Binder<R (*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value call(mrb_state* mrb, void* func_ptr, mrb_value* args, int narg) {
+  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
-    R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))func_ptr;
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))mrb_voidp(cfunc);
     R result = fp(%ARGS%);
     return Type<R>::ret(mrb, result);
   }
@@ -38,11 +48,15 @@ struct Binder<R (*)(%PARAMS%)> {
 template<class C%CLASSES1%>
 struct ClassBinder<C* (*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self, void* new_func_ptr, mrb_value* args, int narg) {
+  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
     DATA_TYPE(self) = &ClassBinder<C>::type_info;
     DATA_PTR(self) = NULL;
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
-    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))new_func_ptr;
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))mrb_voidp(cfunc);
     C* instance = ctor(%ARGS%);
     DATA_PTR(self) = instance;
     return self;
@@ -56,11 +70,15 @@ METHOD_TMPL = <<EOD
 template<class C%CLASSES1%>
 struct ClassBinder<void (C::*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
+  static mrb_value call(mrb_state* mrb, mrb_value self) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
     C* instance = static_cast<C*>(DATA_PTR(self));
+    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
     typedef void (C::*M)(%PARAMS%);
-    M mp = *(M*)method_pptr;
+    M mp = *(M*)RSTRING_PTR(cmethod);
     (instance->*mp)(%ARGS%);
     return mrb_nil_value();
   }
@@ -70,11 +88,15 @@ struct ClassBinder<void (C::*)(%PARAMS%)> {
 template<class C, class R%CLASSES1%>
 struct ClassBinder<R (C::*)(%PARAMS%)> {
   static const int NPARAM = %NPARAM%;
-  static mrb_value call(mrb_state* mrb, mrb_value self, void* method_pptr, mrb_value* args, int narg) {
+  static mrb_value call(mrb_state* mrb, mrb_value self) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
     C* instance = static_cast<C*>(DATA_PTR(self));
+    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
     typedef R (C::*M)(%PARAMS%);
-    M mp = *(M*)method_pptr;
+    M mp = *(M*)RSTRING_PTR(cmethod);
     R result = (instance->*mp)(%ARGS%);
     return Type<R>::ret(mrb, result);
   }
@@ -92,12 +114,12 @@ def embed_template(str, nparam)
     params = 'void'
     args = ''
     classes = ''
-    asserts = '(void)(mrb);(void)(args);(void)(narg);'  # Surppress warning.
+    asserts = '(void)(mrb);(void)(args);'  # Surppress warning.
   else
     params = (0...nparam).map {|i| "P#{i}"}.join(', ')
     args = (0...nparam).map {|i| "ARG(#{i})"}.join(', ')
     classes = (0...nparam).map {|i| "class P#{i}"}.join(', ')
-    asserts = (0...nparam).map {|i| "(void)(narg); CHECK(#{i});"}.join(' ')
+    asserts = (0...nparam).map {|i| "CHECK(#{i});"}.join(' ')
   end
 
   table = {
@@ -106,7 +128,7 @@ def embed_template(str, nparam)
     '%ARGS%' => args,
     '%CLASSES0%' => classes,
     '%CLASSES1%' => classes.empty? ? '' : ', ' + classes,
-    '%ASSERTS%' => asserts
+    '%ASSERTS%' => 'CHECKNARG(narg); ' + asserts
   }
 
   return str.gsub(/(#{table.keys.join('|')})/) {|k| table[k]}
