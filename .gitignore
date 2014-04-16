@@ -4,6 +4,7 @@
 /test/int
 /test/float
 /test/string
+/test/cptr
 /test/class
 /test/module
 /test/wrong_type

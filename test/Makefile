@@ -36,6 +36,9 @@ float:	float.o $(MRUBYBIND_OBJ)
 string:	string.o $(MRUBYBIND_OBJ)
 	g++ -o $@ $^ $(LIB)
 
+cptr:	cptr.o $(MRUBYBIND_OBJ)
+	g++ -o $@ $^ $(LIB)
+
 class:	class.o $(MRUBYBIND_OBJ)
 	g++ -o $@ $^ $(LIB)
 
