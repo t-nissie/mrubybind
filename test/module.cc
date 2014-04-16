@@ -11,11 +11,16 @@ void modfunc(int v) {
 int main() {
   mrb_state* mrb = mrb_open();
 
+  RClass* mod = mrb_define_module(mrb, "Mod");
+  int arena = mrb_gc_arena_save(mrb);
   {
-    RClass* mod = mrb_define_module(mrb, "Mod");
     mrubybind::MrubyBind b(mrb, mod);
     b.bind("modfunc", modfunc);
     b.bind_const("FOO_VALUE", 1234);
+  }
+  if (mrb->arena_idx != arena) {
+    fprintf(stderr, "Arena increased!\n");
+    return EXIT_FAILURE;
   }
 
   int result_code = EXIT_SUCCESS;
@@ -26,5 +31,5 @@ int main() {
   }
 
   mrb_close(mrb);
-  return 0;
+  return result_code;
 }

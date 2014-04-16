@@ -16,6 +16,10 @@ int main() {
     mrubybind::MrubyBind b(mrb);
     b.bind("emphasize", emphasize);
   }
+  if (mrb->arena_idx != 0) {
+    fprintf(stderr, "Arena increased!\n");
+    return EXIT_FAILURE;
+  }
 
   int result_code = EXIT_SUCCESS;
   mrb_load_string(mrb, "puts emphasize('Hello, mruby!')");
@@ -25,5 +29,5 @@ int main() {
   }
 
   mrb_close(mrb);
-  return 0;
+  return result_code;
 }
