@@ -22,7 +22,7 @@ struct Binder<void (*)(%PARAMS%)> {
     mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(%PARAMS%) = (void (*)(%PARAMS%))mrb_voidp(cfunc);
+    void (*fp)(%PARAMS%) = (void (*)(%PARAMS%))mrb_cptr(cfunc);
     fp(%ARGS%);
     return mrb_nil_value();
   }
@@ -38,7 +38,7 @@ struct Binder<R (*)(%PARAMS%)> {
     mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))mrb_voidp(cfunc);
+    R (*fp)(%PARAMS%) = (R (*)(%PARAMS%))mrb_cptr(cfunc);
     R result = fp(%ARGS%);
     return Type<R>::ret(mrb, result);
   }
@@ -56,7 +56,7 @@ struct ClassBinder<C* (*)(%PARAMS%)> {
     mrb_get_args(mrb, "*", &args, &narg);
     %ASSERTS%
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))mrb_voidp(cfunc);
+    C* (*ctor)(%PARAMS%) = (C* (*)(%PARAMS%))mrb_cptr(cfunc);
     C* instance = ctor(%ARGS%);
     DATA_PTR(self) = instance;
     return self;

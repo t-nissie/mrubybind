@@ -131,9 +131,9 @@ struct Type<bool> {
 template<>
 struct Type<void*> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return mrb_voidp_p(v); }
-  static void* get(mrb_value v) { return mrb_voidp(v); }
-  static mrb_value ret(mrb_state* mrb, void* p) { return mrb_voidp_value(mrb, p); }
+  static int check(mrb_value v) { return mrb_cptr_p(v); }
+  static void* get(mrb_value v) { return mrb_cptr(v); }
+  static mrb_value ret(mrb_state* mrb, void* p) { return mrb_cptr_value(mrb, p); }
 };
 
 //===========================================================================
@@ -186,7 +186,7 @@ struct Binder<void (*)(void)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(void) = (void (*)(void))mrb_voidp(cfunc);
+    void (*fp)(void) = (void (*)(void))mrb_cptr(cfunc);
     fp();
     return mrb_nil_value();
   }
@@ -202,7 +202,7 @@ struct Binder<R (*)(void)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(void) = (R (*)(void))mrb_voidp(cfunc);
+    R (*fp)(void) = (R (*)(void))mrb_cptr(cfunc);
     R result = fp();
     return Type<R>::ret(mrb, result);
   }
@@ -220,7 +220,7 @@ struct ClassBinder<C* (*)(void)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(void) = (C* (*)(void))mrb_voidp(cfunc);
+    C* (*ctor)(void) = (C* (*)(void))mrb_cptr(cfunc);
     C* instance = ctor();
     DATA_PTR(self) = instance;
     return self;
@@ -273,7 +273,7 @@ struct Binder<void (*)(P0)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0) = (void (*)(P0))mrb_voidp(cfunc);
+    void (*fp)(P0) = (void (*)(P0))mrb_cptr(cfunc);
     fp(ARG(0));
     return mrb_nil_value();
   }
@@ -289,7 +289,7 @@ struct Binder<R (*)(P0)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0) = (R (*)(P0))mrb_voidp(cfunc);
+    R (*fp)(P0) = (R (*)(P0))mrb_cptr(cfunc);
     R result = fp(ARG(0));
     return Type<R>::ret(mrb, result);
   }
@@ -307,7 +307,7 @@ struct ClassBinder<C* (*)(P0)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0) = (C* (*)(P0))mrb_voidp(cfunc);
+    C* (*ctor)(P0) = (C* (*)(P0))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0));
     DATA_PTR(self) = instance;
     return self;
@@ -360,7 +360,7 @@ struct Binder<void (*)(P0, P1)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1) = (void (*)(P0, P1))mrb_voidp(cfunc);
+    void (*fp)(P0, P1) = (void (*)(P0, P1))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1));
     return mrb_nil_value();
   }
@@ -376,7 +376,7 @@ struct Binder<R (*)(P0, P1)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1) = (R (*)(P0, P1))mrb_voidp(cfunc);
+    R (*fp)(P0, P1) = (R (*)(P0, P1))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1));
     return Type<R>::ret(mrb, result);
   }
@@ -394,7 +394,7 @@ struct ClassBinder<C* (*)(P0, P1)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1) = (C* (*)(P0, P1))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1) = (C* (*)(P0, P1))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1));
     DATA_PTR(self) = instance;
     return self;
@@ -447,7 +447,7 @@ struct Binder<void (*)(P0, P1, P2)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2) = (void (*)(P0, P1, P2))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2) = (void (*)(P0, P1, P2))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2));
     return mrb_nil_value();
   }
@@ -463,7 +463,7 @@ struct Binder<R (*)(P0, P1, P2)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2) = (R (*)(P0, P1, P2))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2) = (R (*)(P0, P1, P2))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2));
     return Type<R>::ret(mrb, result);
   }
@@ -481,7 +481,7 @@ struct ClassBinder<C* (*)(P0, P1, P2)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2) = (C* (*)(P0, P1, P2))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2) = (C* (*)(P0, P1, P2))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2));
     DATA_PTR(self) = instance;
     return self;
@@ -534,7 +534,7 @@ struct Binder<void (*)(P0, P1, P2, P3)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3) = (void (*)(P0, P1, P2, P3))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3) = (void (*)(P0, P1, P2, P3))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3));
     return mrb_nil_value();
   }
@@ -550,7 +550,7 @@ struct Binder<R (*)(P0, P1, P2, P3)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3) = (R (*)(P0, P1, P2, P3))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3) = (R (*)(P0, P1, P2, P3))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3));
     return Type<R>::ret(mrb, result);
   }
@@ -568,7 +568,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3) = (C* (*)(P0, P1, P2, P3))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3) = (C* (*)(P0, P1, P2, P3))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3));
     DATA_PTR(self) = instance;
     return self;
@@ -621,7 +621,7 @@ struct Binder<void (*)(P0, P1, P2, P3, P4)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4) = (void (*)(P0, P1, P2, P3, P4))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3, P4) = (void (*)(P0, P1, P2, P3, P4))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
     return mrb_nil_value();
   }
@@ -637,7 +637,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4) = (R (*)(P0, P1, P2, P3, P4))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3, P4) = (R (*)(P0, P1, P2, P3, P4))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
     return Type<R>::ret(mrb, result);
   }
@@ -655,7 +655,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3, P4)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4) = (C* (*)(P0, P1, P2, P3, P4))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3, P4) = (C* (*)(P0, P1, P2, P3, P4))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
     DATA_PTR(self) = instance;
     return self;
@@ -708,7 +708,7 @@ struct Binder<void (*)(P0, P1, P2, P3, P4, P5)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5) = (void (*)(P0, P1, P2, P3, P4, P5))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3, P4, P5) = (void (*)(P0, P1, P2, P3, P4, P5))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
     return mrb_nil_value();
   }
@@ -724,7 +724,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4, P5)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5) = (R (*)(P0, P1, P2, P3, P4, P5))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3, P4, P5) = (R (*)(P0, P1, P2, P3, P4, P5))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
     return Type<R>::ret(mrb, result);
   }
@@ -742,7 +742,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5) = (C* (*)(P0, P1, P2, P3, P4, P5))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3, P4, P5) = (C* (*)(P0, P1, P2, P3, P4, P5))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
     DATA_PTR(self) = instance;
     return self;
@@ -795,7 +795,7 @@ struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6) = (void (*)(P0, P1, P2, P3, P4, P5, P6))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3, P4, P5, P6) = (void (*)(P0, P1, P2, P3, P4, P5, P6))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
     return mrb_nil_value();
   }
@@ -811,7 +811,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6) = (R (*)(P0, P1, P2, P3, P4, P5, P6))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3, P4, P5, P6) = (R (*)(P0, P1, P2, P3, P4, P5, P6))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
     return Type<R>::ret(mrb, result);
   }
@@ -829,7 +829,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6) = (C* (*)(P0, P1, P2, P3, P4, P5, P6))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6) = (C* (*)(P0, P1, P2, P3, P4, P5, P6))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
     DATA_PTR(self) = instance;
     return self;
@@ -882,7 +882,7 @@ struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
     return mrb_nil_value();
   }
@@ -898,7 +898,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
     return Type<R>::ret(mrb, result);
   }
@@ -916,7 +916,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
     DATA_PTR(self) = instance;
     return self;
@@ -969,7 +969,7 @@ struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
     return mrb_nil_value();
   }
@@ -985,7 +985,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
     return Type<R>::ret(mrb, result);
   }
@@ -1003,7 +1003,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
     DATA_PTR(self) = instance;
     return self;
@@ -1056,7 +1056,7 @@ struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_voidp(cfunc);
+    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_cptr(cfunc);
     fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
     return mrb_nil_value();
   }
@@ -1072,7 +1072,7 @@ struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_voidp(cfunc);
+    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_cptr(cfunc);
     R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
     return Type<R>::ret(mrb, result);
   }
@@ -1090,7 +1090,7 @@ struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
     mrb_get_args(mrb, "*", &args, &narg);
     CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_voidp(cfunc);
+    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_cptr(cfunc);
     C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
     DATA_PTR(self) = instance;
     return self;

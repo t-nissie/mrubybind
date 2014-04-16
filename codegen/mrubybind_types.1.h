@@ -97,9 +97,9 @@ struct Type<bool> {
 template<>
 struct Type<void*> {
   static const char TYPE_NAME[];
-  static int check(mrb_value v) { return mrb_voidp_p(v); }
-  static void* get(mrb_value v) { return mrb_voidp(v); }
-  static mrb_value ret(mrb_state* mrb, void* p) { return mrb_voidp_value(mrb, p); }
+  static int check(mrb_value v) { return mrb_cptr_p(v); }
+  static void* get(mrb_value v) { return mrb_cptr(v); }
+  static mrb_value ret(mrb_state* mrb, void* p) { return mrb_cptr_value(mrb, p); }
 };
 
 //===========================================================================
