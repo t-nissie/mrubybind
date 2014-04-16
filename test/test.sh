@@ -45,7 +45,7 @@ run class 'Foo::ctor(123)
 690
 99980001
 Foo::dtor()'
-#run module 'modfunc called: 1234'
+run module 'modfunc called: 1234'
 
 # Failure cases
 fail wrong_type "TypeError: can't convert String into Fixnum, argument 1(1111)"

@@ -24,7 +24,10 @@ public:
       mrb_symbol_value(func_name_s),          // 1: function name
     };
     struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call, 2, env);
-    mrb_define_method_raw(mrb_, mod_, func_name_s, proc);
+    if (mod_ == mrb_->kernel_module)
+      mrb_define_method_raw(mrb_, mod_, func_name_s, proc);
+    else
+      mrb_define_class_method_raw(mrb_, mod_, func_name_s, proc);
   }
 
   // Bind class.
