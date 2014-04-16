@@ -1,5 +1,6 @@
 *.o
 
+/test/void
 /test/int
 /test/float
 /test/string

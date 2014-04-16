@@ -184,7 +184,7 @@ struct Binder<void (*)(void)> {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); (void)(mrb);(void)(args);
+    CHECKNARG(narg);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
     void (*fp)(void) = (void (*)(void))mrb_voidp(cfunc);
     fp();
@@ -200,7 +200,7 @@ struct Binder<R (*)(void)> {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); (void)(mrb);(void)(args);
+    CHECKNARG(narg);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
     R (*fp)(void) = (R (*)(void))mrb_voidp(cfunc);
     R result = fp();
@@ -218,7 +218,7 @@ struct ClassBinder<C* (*)(void)> {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); (void)(mrb);(void)(args);
+    CHECKNARG(narg);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
     C* (*ctor)(void) = (C* (*)(void))mrb_voidp(cfunc);
     C* instance = ctor();
@@ -235,7 +235,7 @@ struct ClassBinder<void (C::*)(void)> {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); (void)(mrb);(void)(args);
+    CHECKNARG(narg);
     C* instance = static_cast<C*>(DATA_PTR(self));
     mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
     typedef void (C::*M)(void);
@@ -253,7 +253,7 @@ struct ClassBinder<R (C::*)(void)> {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); (void)(mrb);(void)(args);
+    CHECKNARG(narg);
     C* instance = static_cast<C*>(DATA_PTR(self));
     mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
     typedef R (C::*M)(void);

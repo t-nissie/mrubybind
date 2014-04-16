@@ -114,12 +114,12 @@ def embed_template(str, nparam)
     params = 'void'
     args = ''
     classes = ''
-    asserts = '(void)(mrb);(void)(args);'  # Surppress warning.
+    asserts = ''
   else
     params = (0...nparam).map {|i| "P#{i}"}.join(', ')
     args = (0...nparam).map {|i| "ARG(#{i})"}.join(', ')
     classes = (0...nparam).map {|i| "class P#{i}"}.join(', ')
-    asserts = (0...nparam).map {|i| "CHECK(#{i});"}.join(' ')
+    asserts = (0...nparam).map {|i| " CHECK(#{i});"}.join('')
   end
 
   table = {
@@ -128,7 +128,7 @@ def embed_template(str, nparam)
     '%ARGS%' => args,
     '%CLASSES0%' => classes,
     '%CLASSES1%' => classes.empty? ? '' : ', ' + classes,
-    '%ASSERTS%' => 'CHECKNARG(narg); ' + asserts
+    '%ASSERTS%' => 'CHECKNARG(narg);' + asserts
   }
 
   return str.gsub(/(#{table.keys.join('|')})/) {|k| table[k]}

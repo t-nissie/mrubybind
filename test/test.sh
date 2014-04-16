@@ -38,6 +38,7 @@ function fail() {
 ################################################################
 # Test cases.
 
+run void 'dummy called'
 run int '1234321'
 run float '408.0'
 run string '* Hello, mruby! *'

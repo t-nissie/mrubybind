@@ -24,6 +24,9 @@ test:	$(EXES)
 mrubybind.o:	$(MRUBYBIND_SRCDIR)/mrubybind.cc
 	g++ -c -o $@ $(INC) $(CXXFLAGS) $<
 
+void:	void.o $(MRUBYBIND_OBJ)
+	g++ -o $@ $^ $(LIB)
+
 int:	int.o $(MRUBYBIND_OBJ)
 	g++ -o $@ $^ $(LIB)
 
