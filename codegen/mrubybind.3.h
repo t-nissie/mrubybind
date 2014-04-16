@@ -79,7 +79,6 @@ private:
   mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p);
 
   mrb_state* mrb_;
-  mrb_value mod_mrubybind_;
   RClass* mod_;
   int arena_index_;
 };

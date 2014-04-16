@@ -1,4 +1,3 @@
-// Do not modify this file directly, this is generated
 #include "mrubybind.h"
 #include "mruby/compile.h"
 #include "mruby/dump.h"
@@ -7,19 +6,6 @@
 #include "mruby/variable.h"
 
 namespace mrubybind {
-
-//#include "mrubybind.dat"
-#include <stdint.h>
-const uint8_t binder[] = {
-0x52,0x49,0x54,0x45,0x30,0x30,0x30,0x32,0x15,0x99,0x00,0x00,0x00,0x7a,0x4d,0x41,
-0x54,0x5a,0x30,0x30,0x30,0x30,0x49,0x52,0x45,0x50,0x00,0x00,0x00,0x5c,0x30,0x30,
-0x30,0x30,0x00,0x00,0x00,0x32,0x00,0x01,0x00,0x02,0x00,0x01,0x00,0x00,0x00,0x04,
-0x00,0x80,0x00,0x05,0x00,0x80,0x00,0x44,0x00,0x80,0x00,0x45,0x00,0x00,0x00,0x4a,
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x09,0x4d,0x72,0x75,0x62,0x79,0x42,
-0x69,0x6e,0x64,0x00,0x00,0x00,0x00,0x1e,0x00,0x01,0x00,0x02,0x00,0x00,0x00,0x00,
-0x00,0x02,0x00,0x80,0x00,0x05,0x00,0x80,0x00,0x29,0x00,0x00,0x00,0x00,0x00,0x00,
-0x00,0x00,0x45,0x4e,0x44,0x00,0x00,0x00,0x00,0x08,
-};
 
 const char Type<int>::TYPE_NAME[] = "Fixnum";
 const char Type<unsigned int>::TYPE_NAME[] = "Fixnum";
@@ -50,17 +36,6 @@ mrb_value raisenarg(mrb_state *mrb, mrb_value func_name, int narg, int nparam) {
   return mrb_nil_value();
 }
 
-static mrb_value call_cfunc(mrb_state *mrb, mrb_value /*self*/) {
-  mrb_value binder;
-  mrb_value func_ptr_v;
-  mrb_value* args;
-  int narg;
-  mrb_get_args(mrb, "oo*", &binder, &func_ptr_v, &args, &narg);
-  typedef mrb_value (*BindFunc)(mrb_state*, void*, mrb_value*, int);
-  BindFunc binderp = reinterpret_cast<BindFunc>(mrb_voidp(binder));
-  return binderp(mrb, mrb_voidp(func_ptr_v), args, narg);
-}
-
 
 void
 MrubyBind::mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p)
@@ -84,21 +59,6 @@ MrubyBind::~MrubyBind() {
 
 void MrubyBind::Initialize() {
   arena_index_ = mrb_gc_arena_save(mrb_);
-  mrb_sym sym_mrubybind = mrb_intern_cstr(mrb_, "MrubyBind");
-  if (mrb_const_defined(mrb_, mrb_obj_value(mrb_->kernel_module),
-                        sym_mrubybind)) {
-    mod_mrubybind_ = mrb_const_get(mrb_, mrb_obj_value(mrb_->kernel_module),
-                                   sym_mrubybind);
-  } else {
-    RClass* mrubybind = mrb_define_module(mrb_, "MrubyBind");
-    mod_mrubybind_ = mrb_obj_value(mrubybind);
-    mrb_define_module_function(mrb_, mrubybind, "call_cfunc", call_cfunc,
-                               ARGS_REQ(2) | ARGS_REST());
-    mrb_irep* irep = mrb_read_irep(mrb_, binder);
-    if (irep != NULL) {
-      mrb_run(mrb_, mrb_proc_new(mrb_, irep), mrb_top_self(mrb_));
-    }
-  }
 }
 
 struct RClass* MrubyBind::GetClass(const char* class_name) {
