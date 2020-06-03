@@ -38,10 +38,10 @@ mrb_value raisenarg(mrb_state *mrb, mrb_value func_name, int narg, int nparam) {
 
 
 void
-MrubyBind::mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p)
+MrubyBind::mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, mrb_method_t method)
 {
   mrb_define_class_method(mrb, c, mrb_sym2name(mrb, mid), NULL, MRB_ARGS_ANY());  // Dummy registration.
-  mrb_define_method_raw(mrb, ((RObject*)c)->c, mid, p);
+  mrb_define_method_raw(mrb, ((RObject*)c)->c, mid, method);
 }
 
 
@@ -78,7 +78,9 @@ void MrubyBind::BindInstanceMethod(
   };
   struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, binder_func, 2, env);
   struct RClass* klass = GetClass(class_name);
-  mrb_define_method_raw(mrb_, klass, method_name_s, proc);
+  mrb_method_t method;
+  MRB_METHOD_FROM_PROC(method, proc);
+  mrb_define_method_raw(mrb_, klass, method_name_s, method);
 }
 
 }  // namespace mrubybind

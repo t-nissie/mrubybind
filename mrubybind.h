@@ -1171,10 +1171,12 @@ public:
       mrb_symbol_value(func_name_s),          // 1: function name
     };
     struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Func>::call, 2, env);
+    mrb_method_t method;
+    MRB_METHOD_FROM_PROC(method, proc);
     if (mod_ == mrb_->kernel_module)
-      mrb_define_method_raw(mrb_, mod_, func_name_s, proc);
+      mrb_define_method_raw(mrb_, mod_, func_name_s, method);
     else
-      mrb_define_class_method_raw(mrb_, mod_, func_name_s, proc);
+      mrb_define_class_method_raw(mrb_, mod_, func_name_s, method);
   }
 
   // Bind class.
@@ -1209,7 +1211,9 @@ public:
     };
     struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Method>::call, 2, env);
     struct RClass* klass = GetClass(class_name);
-    mrb_define_class_method_raw(mrb_, klass, method_name_s, proc);
+    mrb_method_t method;
+    MRB_METHOD_FROM_PROC(method, proc);
+    mrb_define_class_method_raw(mrb_, klass, method_name_s, method);
   }
 
 private:
@@ -1226,7 +1230,7 @@ private:
   // Mimic mruby API.
   // TODO: Send pull request to the official mruby repository.
   void
-  mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, struct RProc *p);
+  mrb_define_class_method_raw(mrb_state *mrb, struct RClass *c, mrb_sym mid, mrb_method_t method);
 
   mrb_state* mrb_;
   RClass* mod_;
