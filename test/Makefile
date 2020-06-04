@@ -8,7 +8,7 @@ MRUBYBIND_OBJ=mrubybind.o
 SRCS=$(wildcard *.cc)
 EXES=$(SRCS:%.cc=%)
 
-CXXFLAGS=-Wall -Wextra -Werror
+CXXFLAGS=-Wall -Wextra -Werror -std=c++14
 
 all:	$(EXES)
 

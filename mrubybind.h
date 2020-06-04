@@ -36,6 +36,7 @@
 
 #include "mruby/string.h"
 #include <string>
+#include <utility>
 
 namespace mrubybind {
 
@@ -175,14 +176,36 @@ mrb_value raise(mrb_state *mrb, int parameter_index,
                 const char* required_type_name, mrb_value value);
 mrb_value raisenarg(mrb_state *mrb, mrb_value func_name, int narg, int nparam);
 
-// Includes generated template specialization.
-//#include "mrubybind.inc"
-// Following code is generated from gen_template.rb
-#define ARG(i)  Type<P##i>::get(args[i])
-#define CHECK(i)  {if(!Type<P##i>::check(args[i])) return RAISE(i);}
-#define RAISE(i)  raise(mrb, i, Type<P##i>::TYPE_NAME, args[i])
 #define CHECKNARG(narg)  {if(narg != NPARAM) RAISENARG(narg);}
 #define RAISENARG(narg)  raisenarg(mrb, mrb_cfunc_env_get(mrb, 1), narg, NPARAM)
+
+template<class ... P>
+struct TypeChecker {};
+
+template<class P>
+struct TypeChecker<P> {
+  static void check(mrb_state* mrb, int i, mrb_value* args) {
+    if(!Type<P>::check(args[i])) {
+      raise(mrb, i, Type<P>::TYPE_NAME, args[i]);
+    }
+  }
+};
+
+template<class P1, class ... P>
+struct TypeChecker<P1, P...> {
+  static void check(mrb_state* mrb, int i, mrb_value* args) {
+    if(!Type<P1>::check(args[i])) {
+      raise(mrb, i, Type<P1>::TYPE_NAME, args[i]);
+    } else {
+      TypeChecker<P...>::check(mrb, i+1, args);
+    }
+  }
+};
+
+template<class ... P>
+void check_args(mrb_state* mrb, mrb_value* args) {
+  TypeChecker<P...>::check(mrb, 0, args);
+}
 
 // void f(void);
 template<>
@@ -271,876 +294,141 @@ struct ClassBinder<R (C::*)(void)> {
   }
 };
 
-// void f(P0);
-template<class P0>
-struct Binder<void (*)(P0)> {
-  static const int NPARAM = 1;
+// R f(P...);
+template<class R, class ...P>
+struct Binder<R (*)(P...)> {
+  static const int NPARAM = sizeof...(P);
+  typedef R (*fun_t)(P...);
+  template<size_t ... I>
+  static mrb_value apply_bound_function(
+      mrb_state* mrb,
+      fun_t fp,
+      mrb_value* args,
+      std::index_sequence<I...>) {
+    R result = fp(Type<P>::get(args[I])...);
+    return Type<R>::ret(mrb, result);
+  }
   static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0);
+    CHECKNARG(narg);
+    check_args<P...>(mrb, args);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0) = (void (*)(P0))mrb_cptr(cfunc);
-    fp(ARG(0));
+    R (*fp)(P...) = (R (*)(P...))mrb_cptr(cfunc);
+    return apply_bound_function(mrb, fp, args, std::index_sequence_for<P...>());
+  }
+};
+
+// void f(P...);
+template<class ... P>
+struct Binder<void (*)(P...)> {
+  static const int NPARAM = sizeof...(P);
+  typedef void (*fun_t)(P...);
+  template<size_t ... I>
+  static void apply_bound_function(
+      fun_t fp,
+      mrb_value* args,
+      std::index_sequence<I...>) {
+    fp(Type<P>::get(args[I])...);
+  }
+  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
+    mrb_value* args;
+    int narg;
+    mrb_get_args(mrb, "*", &args, &narg);
+    CHECKNARG(narg);
+    check_args<P...>(mrb, args);
+    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
+    void (*fp)(P...) = (void (*)(P...))mrb_cptr(cfunc);
+    apply_bound_function(fp, args, std::index_sequence_for<P...>());
     return mrb_nil_value();
   }
 };
 
-// R f(P0);
-template<class R, class P0>
-struct Binder<R (*)(P0)> {
-  static const int NPARAM = 1;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0) = (R (*)(P0))mrb_cptr(cfunc);
-    R result = fp(ARG(0));
-    return Type<R>::ret(mrb, result);
+// C* ctor(P...);
+template<class C, class ... P>
+struct ClassBinder<C* (*)(P...)> {
+  static const int NPARAM = sizeof...(P);
+  typedef C* (*fun_t)(P...);
+  template<size_t ... I>
+  static C* apply_bound_function(
+      fun_t ctor,
+      mrb_value* args,
+      std::index_sequence<I...>) {
+    return ctor(Type<P>::get(args[I])...);
   }
-};
-
-// C* ctor(P0);
-template<class C, class P0>
-struct ClassBinder<C* (*)(P0)> {
-  static const int NPARAM = 1;
   static mrb_value ctor(mrb_state* mrb, mrb_value self) {
     DATA_TYPE(self) = &ClassBinder<C>::type_info;
     DATA_PTR(self) = NULL;
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0);
+    CHECKNARG(narg);
+    check_args<P...>(mrb, args);
     mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0) = (C* (*)(P0))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0));
+    C* (*ctor)(P...) = (C* (*)(P...))mrb_cptr(cfunc);
+    C* instance = apply_bound_function(ctor, args, std::index_sequence_for<P...>());
     DATA_PTR(self) = instance;
     return self;
   }
 };
 
-// class C { void f(P0) };
-template<class C, class P0>
-struct ClassBinder<void (C::*)(P0)> {
-  static const int NPARAM = 1;
+// class C { void f(P...) };
+template<class C, class ... P>
+struct ClassBinder<void (C::*)(P...)> {
+  static const int NPARAM = sizeof...(P);
+  typedef void (C::*fun_t)(P...);
+  template<size_t ... I>
+  static void apply_bound_function(
+      C* instance,
+      fun_t method,
+      mrb_value* args,
+      std::index_sequence<I...>) {
+    (instance->*method)(Type<P>::get(args[I])...);
+  }
   static mrb_value call(mrb_state* mrb, mrb_value self) {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0);
+    CHECKNARG(narg);
+    check_args<P...>(mrb, args);
     C* instance = static_cast<C*>(DATA_PTR(self));
     mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0);
+    typedef void (C::*M)(P...);
     M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0));
+    apply_bound_function(instance, mp, args, std::index_sequence_for<P...>());
     return mrb_nil_value();
   }
 };
 
-// class C { R f(P0) };
-template<class C, class R, class P0>
-struct ClassBinder<R (C::*)(P0)> {
-  static const int NPARAM = 1;
+// class C { R f(P...) };
+template<class C, class R, class ... P>
+struct ClassBinder<R (C::*)(P...)> {
+  static const int NPARAM = sizeof...(P);
+  typedef R (C::*fun_t)(P...);
+  template<size_t ... I>
+  static mrb_value apply_bound_function(
+      mrb_state* mrb,
+      C* instance,
+      fun_t method,
+      mrb_value* args,
+      std::index_sequence<I...>) {
+    R result = (instance->*method)(Type<P>::get(args[I])...);
+    return Type<R>::ret(mrb, result);
+  }
   static mrb_value call(mrb_state* mrb, mrb_value self) {
     mrb_value* args;
     int narg;
     mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0);
+    CHECKNARG(narg);
+    check_args<P...>(mrb, args);
     C* instance = static_cast<C*>(DATA_PTR(self));
     mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0);
+    typedef R (C::*M)(P...);
     M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0));
-    return Type<R>::ret(mrb, result);
+    return apply_bound_function(mrb, instance, mp, args, std::index_sequence_for<P...>());
   }
 };
-
-// void f(P0, P1);
-template<class P0, class P1>
-struct Binder<void (*)(P0, P1)> {
-  static const int NPARAM = 2;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1) = (void (*)(P0, P1))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1);
-template<class R, class P0, class P1>
-struct Binder<R (*)(P0, P1)> {
-  static const int NPARAM = 2;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1) = (R (*)(P0, P1))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1);
-template<class C, class P0, class P1>
-struct ClassBinder<C* (*)(P0, P1)> {
-  static const int NPARAM = 2;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1) = (C* (*)(P0, P1))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1) };
-template<class C, class P0, class P1>
-struct ClassBinder<void (C::*)(P0, P1)> {
-  static const int NPARAM = 2;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1) };
-template<class C, class R, class P0, class P1>
-struct ClassBinder<R (C::*)(P0, P1)> {
-  static const int NPARAM = 2;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2);
-template<class P0, class P1, class P2>
-struct Binder<void (*)(P0, P1, P2)> {
-  static const int NPARAM = 3;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2) = (void (*)(P0, P1, P2))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2);
-template<class R, class P0, class P1, class P2>
-struct Binder<R (*)(P0, P1, P2)> {
-  static const int NPARAM = 3;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2) = (R (*)(P0, P1, P2))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2);
-template<class C, class P0, class P1, class P2>
-struct ClassBinder<C* (*)(P0, P1, P2)> {
-  static const int NPARAM = 3;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2) = (C* (*)(P0, P1, P2))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2) };
-template<class C, class P0, class P1, class P2>
-struct ClassBinder<void (C::*)(P0, P1, P2)> {
-  static const int NPARAM = 3;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2) };
-template<class C, class R, class P0, class P1, class P2>
-struct ClassBinder<R (C::*)(P0, P1, P2)> {
-  static const int NPARAM = 3;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3);
-template<class P0, class P1, class P2, class P3>
-struct Binder<void (*)(P0, P1, P2, P3)> {
-  static const int NPARAM = 4;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3) = (void (*)(P0, P1, P2, P3))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3);
-template<class R, class P0, class P1, class P2, class P3>
-struct Binder<R (*)(P0, P1, P2, P3)> {
-  static const int NPARAM = 4;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3) = (R (*)(P0, P1, P2, P3))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3);
-template<class C, class P0, class P1, class P2, class P3>
-struct ClassBinder<C* (*)(P0, P1, P2, P3)> {
-  static const int NPARAM = 4;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3) = (C* (*)(P0, P1, P2, P3))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3) };
-template<class C, class P0, class P1, class P2, class P3>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3)> {
-  static const int NPARAM = 4;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3) };
-template<class C, class R, class P0, class P1, class P2, class P3>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3)> {
-  static const int NPARAM = 4;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3, P4);
-template<class P0, class P1, class P2, class P3, class P4>
-struct Binder<void (*)(P0, P1, P2, P3, P4)> {
-  static const int NPARAM = 5;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4) = (void (*)(P0, P1, P2, P3, P4))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3, P4);
-template<class R, class P0, class P1, class P2, class P3, class P4>
-struct Binder<R (*)(P0, P1, P2, P3, P4)> {
-  static const int NPARAM = 5;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4) = (R (*)(P0, P1, P2, P3, P4))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3, P4);
-template<class C, class P0, class P1, class P2, class P3, class P4>
-struct ClassBinder<C* (*)(P0, P1, P2, P3, P4)> {
-  static const int NPARAM = 5;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4) = (C* (*)(P0, P1, P2, P3, P4))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3, P4) };
-template<class C, class P0, class P1, class P2, class P3, class P4>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4)> {
-  static const int NPARAM = 5;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3, P4);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3, P4) };
-template<class C, class R, class P0, class P1, class P2, class P3, class P4>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4)> {
-  static const int NPARAM = 5;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3, P4);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3, P4, P5);
-template<class P0, class P1, class P2, class P3, class P4, class P5>
-struct Binder<void (*)(P0, P1, P2, P3, P4, P5)> {
-  static const int NPARAM = 6;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5) = (void (*)(P0, P1, P2, P3, P4, P5))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3, P4, P5);
-template<class R, class P0, class P1, class P2, class P3, class P4, class P5>
-struct Binder<R (*)(P0, P1, P2, P3, P4, P5)> {
-  static const int NPARAM = 6;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5) = (R (*)(P0, P1, P2, P3, P4, P5))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3, P4, P5);
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5>
-struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5)> {
-  static const int NPARAM = 6;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5) = (C* (*)(P0, P1, P2, P3, P4, P5))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3, P4, P5) };
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5)> {
-  static const int NPARAM = 6;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3, P4, P5);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3, P4, P5) };
-template<class C, class R, class P0, class P1, class P2, class P3, class P4, class P5>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5)> {
-  static const int NPARAM = 6;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3, P4, P5);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3, P4, P5, P6);
-template<class P0, class P1, class P2, class P3, class P4, class P5, class P6>
-struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6)> {
-  static const int NPARAM = 7;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6) = (void (*)(P0, P1, P2, P3, P4, P5, P6))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3, P4, P5, P6);
-template<class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6>
-struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6)> {
-  static const int NPARAM = 7;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6) = (R (*)(P0, P1, P2, P3, P4, P5, P6))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3, P4, P5, P6);
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6>
-struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6)> {
-  static const int NPARAM = 7;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6) = (C* (*)(P0, P1, P2, P3, P4, P5, P6))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3, P4, P5, P6) };
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6)> {
-  static const int NPARAM = 7;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3, P4, P5, P6) };
-template<class C, class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6)> {
-  static const int NPARAM = 7;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3, P4, P5, P6, P7);
-template<class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
-struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
-  static const int NPARAM = 8;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3, P4, P5, P6, P7);
-template<class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
-struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
-  static const int NPARAM = 8;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3, P4, P5, P6, P7);
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
-struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
-  static const int NPARAM = 8;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3, P4, P5, P6, P7) };
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
-  static const int NPARAM = 8;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3, P4, P5, P6, P7) };
-template<class C, class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7)> {
-  static const int NPARAM = 8;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3, P4, P5, P6, P7, P8);
-template<class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
-struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
-  static const int NPARAM = 9;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3, P4, P5, P6, P7, P8);
-template<class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
-struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
-  static const int NPARAM = 9;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3, P4, P5, P6, P7, P8);
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
-struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
-  static const int NPARAM = 9;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7, P8) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3, P4, P5, P6, P7, P8) };
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
-  static const int NPARAM = 9;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3, P4, P5, P6, P7, P8) };
-template<class C, class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8)> {
-  static const int NPARAM = 9;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// void f(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
-template<class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
-struct Binder<void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
-  static const int NPARAM = 10;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    void (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (void (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_cptr(cfunc);
-    fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
-    return mrb_nil_value();
-  }
-};
-
-// R f(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
-template<class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
-struct Binder<R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
-  static const int NPARAM = 10;
-  static mrb_value call(mrb_state* mrb, mrb_value /*self*/) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    R (*fp)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (R (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_cptr(cfunc);
-    R result = fp(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
-// C* ctor(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
-struct ClassBinder<C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
-  static const int NPARAM = 10;
-  static mrb_value ctor(mrb_state* mrb, mrb_value self) {
-    DATA_TYPE(self) = &ClassBinder<C>::type_info;
-    DATA_PTR(self) = NULL;
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
-    mrb_value cfunc = mrb_cfunc_env_get(mrb, 0);
-    C* (*ctor)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) = (C* (*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9))mrb_cptr(cfunc);
-    C* instance = ctor(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
-    DATA_PTR(self) = instance;
-    return self;
-  }
-};
-
-// class C { void f(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) };
-template<class C, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
-struct ClassBinder<void (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
-  static const int NPARAM = 10;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef void (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
-    return mrb_nil_value();
-  }
-};
-
-// class C { R f(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9) };
-template<class C, class R, class P0, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
-struct ClassBinder<R (C::*)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9)> {
-  static const int NPARAM = 10;
-  static mrb_value call(mrb_state* mrb, mrb_value self) {
-    mrb_value* args;
-    int narg;
-    mrb_get_args(mrb, "*", &args, &narg);
-    CHECKNARG(narg); CHECK(0); CHECK(1); CHECK(2); CHECK(3); CHECK(4); CHECK(5); CHECK(6); CHECK(7); CHECK(8); CHECK(9);
-    C* instance = static_cast<C*>(DATA_PTR(self));
-    mrb_value cmethod = mrb_cfunc_env_get(mrb, 0);
-    typedef R (C::*M)(P0, P1, P2, P3, P4, P5, P6, P7, P8, P9);
-    M mp = *(M*)RSTRING_PTR(cmethod);
-    R result = (instance->*mp)(ARG(0), ARG(1), ARG(2), ARG(3), ARG(4), ARG(5), ARG(6), ARG(7), ARG(8), ARG(9));
-    return Type<R>::ret(mrb, result);
-  }
-};
-
 #undef ARG
 #undef CHECK
 
