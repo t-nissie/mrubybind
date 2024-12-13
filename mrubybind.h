@@ -471,7 +471,7 @@ public:
   template <class Func>
   void bind_class(const char* class_name, Func new_func_ptr) {
     struct RClass *tc = mrb_define_class(mrb_, class_name, mrb_->object_class);
-    MRB_SET_INSTANCE_TT(tc, MRB_TT_DATA);
+    MRB_SET_INSTANCE_TT(tc, MRB_TT_CDATA);
     BindInstanceMethod(class_name, "initialize",
                        mrb_cptr_value(mrb_, (void*)new_func_ptr),
                        ClassBinder<Func>::ctor);
@@ -498,7 +498,7 @@ public:
       mrb_symbol_value(method_name_s),          // 1: method name
     };
     struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, Binder<Method>::call, 2, env);
-    struct RClass* klass = GetClass(class_name);
+    struct RClass* klass = mrb_class_get(mrb_, class_name);
     mrb_method_t method;
     MRB_METHOD_FROM_PROC(method, proc);
     mrb_define_class_method_raw(mrb_, klass, method_name_s, method);
@@ -506,9 +506,6 @@ public:
 
 private:
   void Initialize();
-
-  // Returns mruby class under a module.
-  struct RClass* GetClass(const char* class_name);
 
   // Utility for binding instance method.
   void BindInstanceMethod(const char* class_name, const char* method_name,

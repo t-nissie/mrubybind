@@ -21,7 +21,7 @@ test:	$(EXES)
 %.o:	%.cc
 	g++ -c -o $@ $(INC) $(CXXFLAGS) $<
 
-mrubybind.o:	$(MRUBYBIND_SRCDIR)/mrubybind.cc
+mrubybind.o:	$(MRUBYBIND_SRCDIR)/mrubybind.cc $(MRUBYBIND_SRCDIR)/mrubybind.h
 	g++ -c -o $@ $(INC) $(CXXFLAGS) $<
 
 void:	void.o $(MRUBYBIND_OBJ)

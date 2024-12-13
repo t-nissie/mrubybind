@@ -61,12 +61,6 @@ void MrubyBind::Initialize() {
   arena_index_ = mrb_gc_arena_save(mrb_);
 }
 
-struct RClass* MrubyBind::GetClass(const char* class_name) {
-  mrb_value mod = mrb_obj_value(mod_);
-  mrb_value klass_v = mrb_const_get(mrb_, mod, mrb_intern_cstr(mrb_, class_name));
-  return mrb_class_ptr(klass_v);
-}
-
 void MrubyBind::BindInstanceMethod(
     const char* class_name, const char* method_name,
     mrb_value original_func_v,
@@ -77,7 +71,7 @@ void MrubyBind::BindInstanceMethod(
     mrb_symbol_value(method_name_s),  // 1: method name
   };
   struct RProc* proc = mrb_proc_new_cfunc_with_env(mrb_, binder_func, 2, env);
-  struct RClass* klass = GetClass(class_name);
+  struct RClass* klass = mrb_class_get(mrb_, class_name);
   mrb_method_t method;
   MRB_METHOD_FROM_PROC(method, proc);
   mrb_define_method_raw(mrb_, klass, method_name_s, method);
