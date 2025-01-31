@@ -4,6 +4,17 @@ mrubybind - Binding library for mruby/C++
 mrubybind automatically creates C function/class-method binder for [mruby](https://github.com/mruby/mruby),
 using C++ template partial specialization.
 
+Fork history:
+https://github.com/ktaobo/mrubybind (original, not exist now) --->
+https://github.com/skandhas/mrubybind (copy of original) --->
+https://github.com/mdorier/mrubybind (using variadic templates) --->
+https://github.com/t-nissie/mrubybind (this fork)
+
+See also: https://gist.github.com/t-nissie/a2eeabc18c4cd5b010f89890ff30dc5f
+
+This fork of mrubybind is under continuous integration at GitHub Actions:
+[![CI](https://github.com/t-nissie/mrubybind/workflows/CI/badge.svg)](https://github.com/t-nissie/mrubybind/actions)
+
 ## Usage
 
 ### How to use mrubybind in your project
