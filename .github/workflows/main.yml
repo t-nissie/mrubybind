@@ -1,0 +1,37 @@
+# This workflow checks if mrubybind works with the latest mruby
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - uses: actions/checkout@v4
+
+      - name: Glone the latest mruby
+        run: git clone --depth 1 https://github.com/mruby/mruby
+
+      - name: Prepare mruby
+        run: |
+          cd mruby
+          rake -j4
+
+      - name: Test in test
+        run: |
+          cd ../test
+          MRUBY=../mruby make test
