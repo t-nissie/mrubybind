@@ -33,5 +33,5 @@ jobs:
 
       - name: Test in test
         run: |
-          cd ../test
+          cd test
           MRUBY=../mruby make test
