@@ -8,7 +8,7 @@ Fork history:
 https://github.com/ktaobo/mrubybind (original, not exist now) --->
 https://github.com/skandhas/mrubybind (copy of original) --->
 https://github.com/mdorier/mrubybind (using variadic templates) --->
-https://github.com/t-nissie/mrubybind (this fork)
+https://github.com/t-nissie/mrubybind (this fork fixed for [the commit 9c9be44a98 of mruby](https://github.com/mruby/mruby/commit/9c9be44a98))
 
 See also: https://gist.github.com/t-nissie/a2eeabc18c4cd5b010f89890ff30dc5f
 
