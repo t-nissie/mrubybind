@@ -144,7 +144,7 @@ This fork of mrubybind is under continuous integration at GitHub Actions:
 | bool                | TrueClass or FalseClass |
 | void*               | Object                  |
 
-See [mrubybind.h](https://github.com/ktaobo/mrubybind/blob/master/mrubybind.h).
+See mrubybind.h .
 
 # License
 
