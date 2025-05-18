@@ -50,8 +50,8 @@ Foo::dtor()'
 run module 'modfunc called: 1234'
 
 # Failure cases
-fail wrong_type "can't convert String into Fixnum, argument 1(1111) (TypeError)"
-fail wrong_arg_num "'square': wrong number of arguments (2 for 1) (ArgumentError)"
+fail wrong_type "#<TypeError: can't convert String into Fixnum, argument 1(1111)>"
+fail wrong_arg_num "#<ArgumentError: 'square': wrong number of arguments (2 for 1)>"
 
 ################################################################
 # All tests succeeded.
