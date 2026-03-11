@@ -25,6 +25,9 @@ This fork of mrubybind is under continuous integration at GitHub Actions:
 2. Include "mrubybind.h"
 3. Use `MrubyBind` instance to bind C function/class-method to mruby.
 
+You can ask DeepWiki:
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/t-nissie/mrubybind)
+
 ## Examples
 
 ### Bind C function and call it from mruby
