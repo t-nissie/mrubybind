@@ -1,5 +1,5 @@
 
-INC=-I $(MRUBY)/include -I ..
+INC=-I $(MRUBY)/build/host/include -I ..
 LIB=-L $(MRUBY)/build/host/lib -lmruby
 
 MRUBYBIND_SRCDIR=..
